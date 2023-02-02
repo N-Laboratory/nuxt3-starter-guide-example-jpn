@@ -1,11 +1,24 @@
-import { describe, expect, test, vi } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { fireEvent, render } from '@testing-library/vue'
+import { setActivePinia, createPinia } from 'pinia'
 import { waitPerfectly } from '../setup'
 import Form from '~/pages/formScript.vue'
 
 vi.useFakeTimers()
 
+const mockPush = vi.fn()
+
+vi.mock('vue-router', () => ({
+  useRouter: () => ({
+    push: mockPush
+  })
+}))
+
 describe('Form', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
   describe('画面初期状態の確認', () => {
     test('ページが描画されていること', () => {
       // Arrange
@@ -115,6 +128,7 @@ describe('Form', () => {
 
       // Assert
       expect(submitFn).toHaveBeenCalledOnce()
+      expect(mockPush).toHaveBeenCalledWith('/myPage')
     })
   })
 })
