@@ -5,6 +5,17 @@ import AllRules from '@vee-validate/rules'
 import { defineRule, configure } from 'vee-validate'
 import { vi } from 'vitest'
 import flushPromises from 'flush-promises'
+import { RouteLocationNormalized, NavigationGuard } from 'vue-router'
+
+// defineNuxtRouteMiddlewareのスタブ化
+interface RedirectMiddleware {
+  (
+    to: RouteLocationNormalized,
+    from: RouteLocationNormalized
+  ): ReturnType<NavigationGuard>;
+}
+const stubMiddleWare = (middleware: RedirectMiddleware) => middleware
+vi.stubGlobal('defineNuxtRouteMiddleware', stubMiddleWare)
 
 // vee-validateセットアップ
 configure({
