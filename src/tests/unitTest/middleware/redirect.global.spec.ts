@@ -49,6 +49,27 @@ describe('RedirectMiddleware', () => {
     expect(navigateToFn).toHaveBeenCalledWith('formScript')
   })
 
+  test('[myPage]にアクセスがあった場合、 [formScript]にリダイレクトされること', async () => {
+    // Arrange
+    const route: RouteLocationNormalized = {
+      matched: [routeRecordNormalized],
+      fullPath: '',
+      query: { uid: 'foo' },
+      hash: '',
+      redirectedFrom: undefined,
+      path: '/myPage',
+      name: 'myPage',
+      meta: { requiredAuth: true },
+      params: '' as any
+    }
+
+    // Act
+    await redirect(route, route)
+
+    // Assert
+    expect(navigateToFn).toHaveBeenCalledWith('formScript')
+  })
+
   test('[formInline]にアクセスがあった場合、 [formScript]にリダイレクトされないこと', async () => {
     // Arrange
     const route: RouteLocationNormalized = {

@@ -1,6 +1,6 @@
 export default defineNuxtRouteMiddleware((to, from) => {
-  // 「/」にアクセスがあった場合
-  if (to.path === '/') {
+  // 「/」または「myPage」にアクセスがあった場合
+  if (to.path === '/' || (to.path === '/myPage' && from.path === '/myPage')) {
     // formScript.vueへリダイレクト
     return navigateTo('formScript')
   }
