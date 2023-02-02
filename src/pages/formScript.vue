@@ -1,15 +1,23 @@
 <script lang="ts" setup>
 import { useForm, useField } from 'vee-validate'
+import { useUserStore } from '../store/user'
+
+const router = useRouter()
+const store = useUserStore()
+
 const { handleSubmit, errors, isSubmitting, meta } = useForm({
   validationSchema: {
     email: 'required|email',
     password: 'required'
   }
 })
+
 const { value: password } = useField('password')
 const { value: email } = useField('email')
+
 const submit = handleSubmit(() => {
-  console.log(email.value, password.value)
+  store.setUserInfo(email.value as string, password.value as string)
+  router.push('/myPage')
 })
 </script>
 
@@ -43,9 +51,9 @@ const submit = handleSubmit(() => {
           <span v-if="errors.password" class="message invalid" data-testid="password-error-msg">{{ errors.password }}</span>
         </div>
         <div class="field">
-          <!-- If the form submission function is being run, isSubmitting return true. -->
-          <!-- When all field value is valid, meta.valid return true. -->
-          <!-- show detail https://vee-validate.logaretm.com/v4/api/use-form/#api-reference -->
+          <!-- フォームの送信処理が実行中の場合は, isSubmittingはtrueを返す -->
+          <!-- すべての項目に有効な値が入力された場合は、meta.validはtrueを返す -->
+          <!-- 詳細に関してはこちらを参照ください https://vee-validate.logaretm.com/v4/api/use-form/#api-reference -->
           <button
             :disabled="isSubmitting || !meta.valid"
             :class="{ 'btn-disabled' : isSubmitting || !meta.valid}"

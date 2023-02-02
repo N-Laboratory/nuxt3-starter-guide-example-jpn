@@ -1,7 +1,13 @@
 <script lang="ts" setup>
 import { Form, Field, ErrorMessage } from 'vee-validate'
+import { useUserStore } from '../store/user'
+
+const router = useRouter()
+const store = useUserStore()
+
 const submit = (values: Record<string, any>) => {
-  console.log(values.email, values.password)
+  store.setUserInfo(values.email, values.password)
+  router.push('/myPage')
 }
 </script>
 
@@ -12,8 +18,9 @@ const submit = (values: Record<string, any>) => {
         Login
       </h1>
       <div class="login-form">
-        <!-- By default the Form component use handleSubmit to handle any submit events -->
-        <!-- show detail https://vee-validate.logaretm.com/v4/api/form/#slots -->
+        <!-- FormコンポーネントはデフォルトでhandleSubmitを使用して、submitイベントを処理します。 -->
+        <!-- そのため、submitイベント発火時に全項目のバリデーションチェックが同時に実行されます。 -->
+        <!-- 詳細はこちらのhandleSubmitをご参照ください https://vee-validate.logaretm.com/v4/api/form/#slots -->
         <Form v-slot="{ meta, isSubmitting }" data-testid="validation-form" @submit="submit">
           <div class="field">
             <Field
@@ -40,9 +47,9 @@ const submit = (values: Record<string, any>) => {
             <ErrorMessage name="password" class="message invalid" data-testid="password-error-msg" />
           </div>
           <div class="field">
-            <!-- If the form submission function is being run, isSubmitting return true. -->
-            <!-- When all field value is valid, meta.valid return true. -->
-            <!-- show detail https://vee-validate.logaretm.com/v4/api/use-form/#api-reference -->
+            <!-- フォームの送信処理が実行中の場合は, isSubmittingはtrueを返す -->
+            <!-- すべての項目に有効な値が入力された場合は、meta.validはtrueを返す -->
+            <!-- 詳細に関してはこちらを参照ください https://vee-validate.logaretm.com/v4/api/use-form/#api-reference -->
             <button
               :disabled="isSubmitting || !meta.valid"
               :class="{ 'btn-disabled' : isSubmitting || !meta.valid}"
