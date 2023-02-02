@@ -1,5 +1,51 @@
 <testExecutions version="1">
+  <file path="src/tests/e2eTest/spec/formInline.spec.ts">
+    <testCase name="Index - 画面初期状態の確認 - 1-送信ボタンが非活性であること" duration="3826" />
+    <testCase name="Index - フォームのバリデーションチェック - 2:emailが入力必須の項目であること" duration="4401" />
+    <testCase name="Index - フォームのバリデーションチェック - 3:passwordが入力必須の項目であること" duration="3986" />
+    <testCase name="Index - フォームのバリデーションチェック - 4-emailの入力は有効なメールアドレス形式であること" duration="3053" />
+    <testCase name="Index - フォームのバリデーションチェック - 5-送信ボタンを押下した場合、myPageへ遷移すること" duration="5825" />
+  </file>
+  <file path="src/tests/e2eTest/spec/formScript.spec.ts">
+    <testCase name="Index - 画面初期状態の確認 - 1-送信ボタンが非活性であること" duration="1070" />
+    <testCase name="Index - フォームのバリデーションチェック - 2:emailが入力必須の項目であること" duration="2801" />
+    <testCase name="Index - フォームのバリデーションチェック - 3:passwordが入力必須の項目であること" duration="2839" />
+    <testCase name="Index - フォームのバリデーションチェック - 4-emailの入力は有効なメールアドレス形式であること" duration="1931" />
+    <testCase name="Index - フォームのバリデーションチェック - 5-送信ボタンを押下した場合、myPageへ遷移すること" duration="5713" />
+  </file>
+  <file path="src/tests/unitTest/middleware/redirect.global.spec.ts">
+    <testCase name="RedirectMiddleware - [/]にアクセスがあった場合、 [formScript]にリダイレクトされること" duration="3" />
+    <testCase name="RedirectMiddleware - [myPage]にアクセスがあった場合、 [formScript]にリダイレクトされること" duration="0" />
+    <testCase name="RedirectMiddleware - [formInline]にアクセスがあった場合、 [formScript]にリダイレクトされないこと" duration="0" />
+  </file>
+  <file path="src/tests/unitTest/pages/formInline.spec.ts">
+    <testCase name="Form - 画面初期状態の確認 - ページが描画されていること" duration="43" />
+    <testCase name="Form - 画面初期状態の確認 - 送信ボタンが非活性であること" duration="12" />
+    <testCase name="Form - vee-validateの動作確認 - emailが入力必須の項目であること" duration="15" />
+    <testCase name="Form - vee-validateの動作確認 - passwordが入力必須の項目であること" duration="21" />
+    <testCase name="Form - vee-validateの動作確認 - emailの入力は有効なメールアドレス形式であること" duration="23" />
+    <testCase name="Form - vee-validateの動作確認 - すべての項目へ有効な値を入力した場合は、送信ボタンが活性になること" duration="12" />
+    <testCase name="Form - vee-validateの動作確認 - 送信ボタンを押下した場合は、送信処理が実行されること" duration="13" />
+  </file>
+  <file path="src/tests/unitTest/pages/formScript.spec.ts">
+    <testCase name="Form - 画面初期状態の確認 - ページが描画されていること" duration="30" />
+    <testCase name="Form - 画面初期状態の確認 - 送信ボタンが非活性であること" duration="9" />
+    <testCase name="Form - vee-validateの動作確認 - emailが入力必須の項目であること" duration="13" />
+    <testCase name="Form - vee-validateの動作確認 - passwordが入力必須の項目であること" duration="6" />
+    <testCase name="Form - vee-validateの動作確認 - emailの入力は有効なメールアドレス形式であること" duration="9" />
+    <testCase name="Form - vee-validateの動作確認 - すべての項目へ有効な値を入力した場合は、送信ボタンが活性になること" duration="26" />
+    <testCase name="Form - vee-validateの動作確認 - 送信ボタンを押下した場合は、送信処理が実行されること" duration="21" />
+  </file>
   <file path="src/tests/unitTest/pages/index.spec.ts">
-    <testCase name="Index - Indexページにタイトルが表示されていること" duration="11" />
+    <testCase name="Index - Indexページにタイトルが表示されていること" duration="12" />
+    <testCase name="Index - Input value should emit" duration="4" />
+  </file>
+  <file path="src/tests/unitTest/pages/myPage.spec.ts">
+    <testCase name="Mypage - ページが描画されていること" duration="20" />
+    <testCase name="Mypage - emailとpasswordがstoreのユーザ情報の値で設定されていること." duration="3" />
+  </file>
+  <file path="src/tests/unitTest/store/user.spec.ts">
+    <testCase name="Store - storeのユーザー情報が初期化されていること" duration="2" />
+    <testCase name="Store - setUserInfoを呼び出した場合, storeのユーザー情報が更新されること" duration="1" />
   </file>
 </testExecutions>

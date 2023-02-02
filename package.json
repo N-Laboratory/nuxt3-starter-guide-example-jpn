@@ -1,7 +1,8 @@
 {
   "private": true,
   "config": {
-    "path": "./src/tests/unitTest/pages/index.spec.ts"
+    "path": "./src/tests/unitTest/pages/index.spec.ts",
+    "token": "sqp_57c41c40f8ccd6a0ff1e0ea4e66940d0e2531eff"
   },
   "scripts": {
     "build": "nuxt build",
@@ -13,7 +14,9 @@
     "lint:fix": "npm run lint -- --fix",
     "test:all": "vitest --coverage",
     "test:linux": "vitest --coverage $npm_package_config_path",
-    "test:win": "vitest --coverage %npm_package_config_path%"
+    "test:win": "vitest --coverage %npm_package_config_path%",
+    "sonar:linux": "sonar-scanner -Dsonar.login=$npm_package_config_token",
+    "sonar:win": "sonar-scanner -Dsonar.login=%npm_package_config_token%"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
@@ -28,6 +31,7 @@
     "happy-dom": "^8.2.2",
     "nuxt": "^3.1.1",
     "puppeteer": "^19.6.3",
+    "sonarqube-scanner": "^3.0.0",
     "typescript": "^4.9.5",
     "unplugin-auto-import": "^0.13.0",
     "vee-validate": "^4.7.3",

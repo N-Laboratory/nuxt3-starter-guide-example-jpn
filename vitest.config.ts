@@ -23,10 +23,12 @@ export default defineConfig({
       provider: 'c8',
       include: ['src/**/*.{vue,js,ts}'],
       all: false,
-      reporter: ['html', 'clover', 'text']
+      // lcovを指定することでSonarQubeがテストのカバレッジを参照するためのファイル（lcov.info）を生成する
+      reporter: ['html', 'clover', 'text', 'lcov']
     },
     root: '.',
     reporters: ['verbose', 'vitest-sonar-reporter'],
+    // テスト結果をSonarQubeの解析用に出力する
     outputFile: 'test-report.xml',
     globals: true,
     environment: 'happy-dom',
