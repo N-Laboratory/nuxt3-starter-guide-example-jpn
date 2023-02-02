@@ -1,0 +1,5 @@
+<testExecutions version="1">
+  <file path="src/tests/unitTest/pages/index.spec.ts">
+    <testCase name="Index - Indexページにタイトルが表示されていること" duration="11" />
+  </file>
+</testExecutions>
