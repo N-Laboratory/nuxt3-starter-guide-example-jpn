@@ -1,8 +1,7 @@
 {
   "private": true,
   "config": {
-    "path": "./src/tests/unitTest/pages/index.spec.ts",
-    "token": "sqp_57c41c40f8ccd6a0ff1e0ea4e66940d0e2531eff"
+    "path": "./src/tests/unitTest/pages/index.spec.ts"
   },
   "scripts": {
     "build": "nuxt build",
@@ -15,8 +14,7 @@
     "test:all": "vitest --coverage",
     "test:linux": "vitest --coverage $npm_package_config_path",
     "test:win": "vitest --coverage %npm_package_config_path%",
-    "sonar:linux": "sonar-scanner -Dsonar.login=$npm_package_config_token",
-    "sonar:win": "sonar-scanner -Dsonar.login=%npm_package_config_token%"
+    "sonar": "sonar-scanner"
   },
   "devDependencies": {
     "@nuxtjs/eslint-config-typescript": "^12.0.0",
