@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from 'vitest'
-import { RouteRecordNormalized, RouteLocationNormalized } from 'vue-router'
+import type { RouteRecordNormalized, RouteLocationNormalized } from 'vue-router'
 import redirect from '~/middleware/redirect.global'
 
 vi.useFakeTimers()
@@ -21,7 +21,8 @@ describe('RedirectMiddleware', () => {
     updateGuards: '' as any,
     enterCallbacks: '' as any,
     instances: '' as any,
-    aliasOf: undefined
+    aliasOf: undefined,
+    mods: {},
   }
 
   afterEach(() => {

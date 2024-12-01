@@ -1,11 +1,11 @@
 import { localize, setLocale } from '@vee-validate/i18n'
 import en from '@vee-validate/i18n/dist/locale/en.json'
 import ja from '@vee-validate/i18n/dist/locale/ja.json'
-import AllRules from '@vee-validate/rules'
 import { defineRule, configure } from 'vee-validate'
 import { vi } from 'vitest'
 import flushPromises from 'flush-promises'
-import { RouteLocationNormalized, NavigationGuard } from 'vue-router'
+import type { RouteLocationNormalized, NavigationGuard } from 'vue-router'
+import { all } from '@vee-validate/rules'
 
 // defineNuxtRouteMiddlewareのスタブ化
 interface RedirectMiddleware {
@@ -26,9 +26,9 @@ configure({
   })
 })
 
-Object.keys(AllRules).forEach((rule) => {
-  // すべてのバリデーションルール読み込み
-  defineRule(rule, AllRules[rule])
+Object.entries(all).forEach(([name, rule]) => {
+  // すべてのルールをインポート
+  defineRule(name, rule)
 })
 
 // エラーメッセージの日本語化

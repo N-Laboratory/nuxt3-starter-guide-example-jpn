@@ -9,22 +9,22 @@ export default defineConfig({
     AutoImport({
       // インポートするライブラリにはプリセットが用意されています
       // https://github.com/antfu/unplugin-auto-import/tree/main/src/presets
-      imports: ['vue', 'pinia', 'vue-router']
-    })
+      imports: ['vue', 'pinia', 'vue-router'],
+    }),
   ],
   resolve: {
     alias: {
       '~': path.resolve(__dirname, './src'),
-      '@': path.resolve(__dirname, './src')
-    }
+      '@': path.resolve(__dirname, './src'),
+    },
   },
   test: {
     coverage: {
-      provider: 'c8',
+      provider: 'v8',
       include: ['src/**/*.{vue,js,ts}'],
       all: false,
       // lcovを指定することでSonarQubeがテストのカバレッジを参照するためのファイル（lcov.info）を生成する
-      reporter: ['html', 'clover', 'text', 'lcov']
+      reporter: ['html', 'clover', 'text', 'lcov'],
     },
     root: '.',
     reporters: ['verbose', 'vitest-sonar-reporter'],
@@ -32,6 +32,6 @@ export default defineConfig({
     outputFile: 'test-report.xml',
     globals: true,
     environment: 'happy-dom',
-    setupFiles: './src/tests/unitTest/setup.ts'
-  }
+    setupFiles: './src/tests/unitTest/setup.ts',
+  },
 })

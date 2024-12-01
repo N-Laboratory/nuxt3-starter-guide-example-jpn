@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { launch, PuppeteerLaunchOptions } from 'puppeteer'
+import { launch, type PuppeteerLaunchOptions } from 'puppeteer'
 import type { Browser, Page } from 'puppeteer'
 
 // ブラウザの起動オプションの設定。使用できるパラメータに関しての詳細は以下を参照ください。

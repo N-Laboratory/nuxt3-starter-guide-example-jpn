@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { launch, PuppeteerLaunchOptions } from 'puppeteer'
-import type { Browser, Page } from 'puppeteer'
+import { launch } from 'puppeteer'
+import type { Browser, Page, PuppeteerLaunchOptions } from 'puppeteer'
 
 // ブラウザの起動オプションの設定。使用できるパラメータに関しての詳細は以下を参照ください。
 // https://pptr.dev/api/puppeteer.browserlaunchargumentoptions
@@ -9,10 +9,10 @@ const options: PuppeteerLaunchOptions = {
   slowMo: 75,
   defaultViewport: {
     width: 1280,
-    height: 1024
+    height: 1024,
   },
   devtools: true,
-  args: ['--window-size=1680,1024']
+  args: ['--window-size=1680,1024'],
 }
 
 describe('Index', () => {
@@ -35,18 +35,19 @@ describe('Index', () => {
         await page.goto('http://localhost:3000/formInline')
         const isDisabled = await page.$eval(
           '[data-testid="submit-btn"]',
-          element => (element as HTMLButtonElement).disabled
+          element => (element as HTMLButtonElement).disabled,
         )
 
         // スクリーンショットの撮影
         await page.screenshot({
           path: './src/tests/e2eTest/evidence/pages/formInline/test-01.png',
-          fullPage: true
+          fullPage: true,
         })
 
         // Assert
         expect(isDisabled).toBeTruthy()
-      } catch (e) {
+      }
+      catch (e) {
         console.error(e)
         expect(e).toBeUndefined()
       }
@@ -57,17 +58,17 @@ describe('Index', () => {
     test.each([
       [
         '2',
-        'email'
+        'email',
       ],
       [
         '3',
-        'password'
-      ]
+        'password',
+      ],
     ])(
       '%s:%sが入力必須の項目であること',
       async (
         testNo,
-        inputName
+        inputName,
       ) => {
         try {
           // Act
@@ -77,22 +78,23 @@ describe('Index', () => {
 
           await page.screenshot({
             path: `./src/tests/e2eTest/evidence/pages/formInline/test-0${testNo}.png`,
-            fullPage: true
+            fullPage: true,
           })
 
           const errorMsg = await page.$eval(
             `[data-testid="${inputName}-error-msg"]`,
-            element => element.textContent
+            element => element.textContent,
           )
 
           // Assert
           expect(errorMsg).toBe(`${inputName}は必須項目です`)
-        } catch (e) {
+        }
+        catch (e) {
           console.error(e)
           expect(e).toBeUndefined()
         }
       },
-      60000
+      60000,
     )
 
     test('4-emailの入力は有効なメールアドレス形式であること', async () => {
@@ -104,17 +106,18 @@ describe('Index', () => {
 
         await page.screenshot({
           path: './src/tests/e2eTest/evidence/pages/formInline/test-04.png',
-          fullPage: true
+          fullPage: true,
         })
 
         const errorMsg = await page.$eval(
           '[data-testid="email-error-msg"]',
-          element => element.textContent
+          element => element.textContent,
         )
 
         // Assert
         expect(errorMsg).toBe('emailは有効なメールアドレスではありません')
-      } catch (e) {
+      }
+      catch (e) {
         console.error(e)
         expect(e).toBeUndefined()
       }
@@ -129,7 +132,7 @@ describe('Index', () => {
         await page.keyboard.press('Tab')
         const isDisabled = await page.$eval(
           '[data-testid="submit-btn"]',
-          element => (element as HTMLButtonElement).disabled
+          element => (element as HTMLButtonElement).disabled,
         )
 
         // Act
@@ -137,21 +140,21 @@ describe('Index', () => {
 
         await page.screenshot({
           path: './src/tests/e2eTest/evidence/pages/formInline/test-05.png',
-          fullPage: true
+          fullPage: true,
         })
 
         // textContentは前後に空白を付与したテキストを返却するのでtrimで空白を除去する必要があります
         const pageTitle = await page.$eval(
           '[data-testid="page-title"]',
-          element => element.textContent?.trim()
+          element => element.textContent?.trim(),
         )
         const email = await page.$eval(
           '[data-testid="page-email"]',
-          element => element.textContent
+          element => element.textContent,
         )
         const password = await page.$eval(
           '[data-testid="page-password"]',
-          element => element.textContent
+          element => element.textContent,
         )
 
         // Assert
@@ -159,7 +162,8 @@ describe('Index', () => {
         expect(pageTitle).toBe('MyPage')
         expect(email).toBe('test@test.com')
         expect(password).toBe('test')
-      } catch (e) {
+      }
+      catch (e) {
         console.error(e)
         expect(e).toBeUndefined()
       }
