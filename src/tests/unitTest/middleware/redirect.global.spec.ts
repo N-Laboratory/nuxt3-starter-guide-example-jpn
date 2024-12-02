@@ -17,11 +17,11 @@ describe('RedirectMiddleware', () => {
     meta: { requiredAuth: true },
     props: { props: true },
     beforeEnter: [],
-    leaveGuards: '' as any,
-    updateGuards: '' as any,
-    enterCallbacks: '' as any,
-    instances: '' as any,
     aliasOf: undefined,
+    leaveGuards: new Set(),
+    updateGuards: new Set(),
+    enterCallbacks: { test: [] },
+    instances: { test: null },
     mods: {},
   }
 
@@ -40,7 +40,7 @@ describe('RedirectMiddleware', () => {
       path: '/',
       name: 'index',
       meta: { requiredAuth: true },
-      params: '' as any
+      params: {},
     }
 
     // Act
@@ -61,7 +61,7 @@ describe('RedirectMiddleware', () => {
       path: '/myPage',
       name: 'myPage',
       meta: { requiredAuth: true },
-      params: '' as any
+      params: {},
     }
 
     // Act
@@ -82,7 +82,7 @@ describe('RedirectMiddleware', () => {
       path: '/formInline',
       name: 'formInline',
       meta: { requiredAuth: true },
-      params: '' as any
+      params: {},
     }
 
     // Act
