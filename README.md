@@ -5,6 +5,7 @@
   <img src="https://img.shields.io/badge/-Node.js-lightyellow.svg?logo=node.js&style=flat">
   <img src="https://img.shields.io/badge/-ESLint-4B32C3.svg?logo=eslint&style=flat">
   <img src="https://img.shields.io/badge/-Vitest-FF8800.svg?logo=vitest&style=flat">
+  <img src="https://img.shields.io/badge/-Storybook-grey.svg?logo=storybook&style=flat">
   <img src="https://img.shields.io/badge/-Puppeteer-lightyellow.svg?logo=puppeteer&style=flat">
   <img src="https://img.shields.io/badge/-SonarQube-white.svg?logo=sonarqube&style=flat">
   <img src="https://img.shields.io/badge/-Windows-0078D6.svg?logo=windows&style=flat">
@@ -18,39 +19,44 @@
     <img src="https://img.shields.io/badge/-FollowMyAccount-grey.svg?logo=github&style=flat">
   </a>
 </p>
+Nuxt3のテンプレートプロジェクト。
 
-
-Nuxt3のテンプレートプロジェクトとして最低限必要な機能を実装し、要点を解説しています。
-ユニットテスト、E2Eテスト、SonarQubeも取り扱っています。
+最低限必要な機能を実装し、要点を解説しています。 ユニットテスト、E2Eテスト、SonarQubeも取り扱っています。
 
 このプロジェクトでは以下の機能を実装しています。
 * Vitest (unit test)
-* EsLint
+* EsLint (Flat Config and Stylistic)
+* Migrate to Flat Config and Stylistic
 * VeeValidate
 * Navigation guard
 * Pinia
+* Storybook
 * Puppeteer (E2E test)
 * SonarQube
+* TypeScript
 
 ## Contents
 
-1. [Create New Project](#create-new-project)
-1. [Typescript Setup](#typescript-setup)
-1. [EsLint Setup with Typescript](#eslint-setup-with-typescript)
-1. [Vitest Setup](#vitest-setup)
-1. [VeeValidate Setup](#veevalidate-setup)
-1. [VeeValidate Testing](#veevalidate-testing)
+1. [プロジェクトの作成](#プロジェクトの作成)
+1. [Typescript Setup](#typescriptの設定)
+1. [EsLint Flat Configの設定](#eslint-flat-configの設定)
+1. [ESLint Stylisticの設定](#eslint-stylisticの設定)
+1. [Flat ConfigとStylisticへの移行](#flat-configとstylisticへの移行)
+1. [Vitestの設定](#vitestの設定)
+1. [VeeValidateの設定](#veevalidateの設定)
+1. [VeeValidateのテスト実装](#veevalidateのテスト実装)
 1. [Navigation guard](#navigation-guard)
-1. [Pinia Setup](#pinia-setup)
+1. [Piniaの設定](#piniaの設定)
 1. [Pinia Testing](#pinia-testing)
 1. [Data Fetching](#data-fetching)
+1. [Storybookの設定](#storybookの設定)
 1. [E2E Testing By Puppeteer](#e2e-testing-by-puppeteer)
 1. [Analyzing source code by SonarQube](#analyzing-source-code-by-sonarqube)
 
-## Create [New Project](https://nuxt.com/docs/getting-started/installation#new-project)
+## [プロジェクトの作成](https://nuxt.com/docs/getting-started/installation#new-project)
 Nuxt3のプロジェクトを新規作成するには以下のコマンドを実行します。
 ```bash
-npx nuxi init <project-name>
+npx nuxi@latest init <project-name>
 ```
 
 ソースディレクトリを変更する場合はnuxt.config.tsに以下を追加します。
@@ -62,12 +68,11 @@ export default defineNuxtConfig({
   srcDir: 'src/'
 });
 ```
-
-### Install
+必要なモジュールをインストールします。
 ```bash
 npm install
 ```
-### Usage
+Nuxtの起動
 ```bash
 npm run dev
 ```
@@ -75,71 +80,284 @@ npm run dev
 
 http://localhost:3000
 
-## [Typescript](https://nuxt.com/docs/guide/concepts/typescript) Setup
+## [Typescriptの設定](https://nuxt.com/docs/guide/concepts/typescript)
 ```bash
-# Typescriptインストール
-npm install --save-dev typescript vue-tsc @types/node
+npm install --save-dev vue-tsc typescript
 ```
+
 nuxt.config.tsにtypescriptを追加します。
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
+  // 設定できるプロパティは以下を参照ください
+  // https://nuxt.com/docs/api/nuxt-config#typescript
   typescript: {
-    shim: false,    // shimsファイル生成の無効化（VSCodeでVolarを使う場合はfalseにする）
-    strict: true,   // 型チェックを厳格化
-    typeCheck: true // nuxt devまたはnuxt build時に型チェックを実行
+    // nuxt devまたはnuxt build時に型チェックを実行
+    typeCheck: true
   },
 });
 ```
 
-## [EsLint](https://github.com/nuxt/eslint-config) Setup with Typescript
+## [EsLint Flat Configの設定](https://eslint.nuxt.com/packages/module)
+以下のコマンドでESLintとNuxt ESLintをインストールします。Nuxt ESLint はAll-in-one ESLint integration for Nuxtと公式が記載しているとおり、NuxtにESLintを導入するためのオールインワンモジュールです。
+
 ```bash
-# ESlintインストール
-npm install --save-dev @nuxtjs/eslint-config-typescript eslint
+npm install --save-dev @nuxt/eslint eslint
 ```
-プロジェクトのルート配下に.eslintrcを新規作成して、以下を追加します。
-```json
-{
-  "extends": [
-    "@nuxtjs/eslint-config-typescript"
+
+nuxt.config.tsのmodulesに@nuxt/eslintを追加します。
+```ts
+export default defineNuxtConfig({
+  modules: [
+    '@nuxt/eslint'
+  ],
+})
+```
+
+ルート配下にeslint.config.mjsを新規作成して以下の内容で保存します。
+指定できるオプションの詳細は以下を参照ください。
+
+https://eslint.org/docs/latest/use/configure/configuration-files
+```js
+// eslint.config.mjs
+import withNuxt from './.nuxt/eslint.config.mjs'
+
+export default withNuxt(
+  {
+    // lintの適用ファイルの指定.
+    files: ['**/*.ts', '**/*.tsx'],
+    // lintの適用対象外のファイルの指定。従来の--ignore-pathをここでは指定します。
+    ignores: ["**/*.config.ts"],
+    // lintのルールの設定
+    rules: {
+      'no-console': 'off'
+    }
+  },
+  // 特定のファイルに異なるlintのルールを適用する場合は以下のように設定します。
+  {
+    files: ['**/*.vue',],
+    rules: {
+      'no-console': 'error'
+    }
+  }
+)
+```
+
+lintの適用対象外のファイルには以下がデフォルトで設定されています。
+
+https://github.com/nuxt/eslint/blob/main/packages/eslint-config/src/flat/configs/ignores.ts
+```ts
+import type { Linter } from 'eslint'
+
+export default function ignores(): Linter.FlatConfig[] {
+  return [
+    {
+      ignores: [
+        '**/dist',
+        '**/node_modules',
+        '**/.nuxt',
+        '**/.output',
+        '**/.vercel',
+        '**/.netlify',
+      ],
+    },
   ]
 }
 ```
-
-package.jsonのscriptsに以下の2項目を追加します。
+package.jsonのscriptsに以下のコマンドを追加します。
 ```json
 {
   "scripts": {
-    "lint": "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
-    "lint:fix": "npm run lint -- --fix"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
   }
 }
 ```
 
-以下のコマンドでESLintを実行します。
+以下のコマンドを実行し、lintチェックを行います。
 ```bash
-# ESLintの実行
+# ESLintのチェック実施
 npm run lint
 
-# ESLintの実行 + 自動修正
+# ESLintのチェックとコードの修正実施
 npm run lint:fix
 ```
 
-## [Vitest](https://vitest.dev/) Setup
-
-```bash
-# vitestインストール
-npm install --save-dev vitest @testing-library/vue happy-dom
+### VS CodeでFlat Configの有効化
+VSCodeの拡張機能のESLintのバージョンが3.0.10以前の場合は.vscode/settings.jsonに以下を追加することでFlat Configを有効化します。3.0.10以上をインストールしている場合は以下の設定を行う必要はありません。
+```json
+{
+  "eslint.experimental.useFlatConfig": true
+}
 ```
 
-プロジェクトのルート配下にvitest.config.tsを新規作成し、以下を追加します。
+## [ESLint Stylisticの設定](https://eslint.nuxt.com/packages/module#eslint-stylistic)
+以下のコマンドでeslintをインストールします。すでにインストール済みの場合は不要です。
+```bash
+npm install --save-dev @nuxt/eslint eslint
+```
+NuxtはESLint Stylisticを統合しており、nuxt.config.tsで設定することができます。
+```ts
+export default defineNuxtConfig({
+  modules: [
+    '@nuxt/eslint'
+  ],
+  eslint: {
+    config: {
+      stylistic: true
+    }
+  }
+})
+```
+以下のようにルールをカスタマイズすることもできます。設定できる項目は以下を参照ください。
 
+https://eslint.style/guide/config-presets#configuration-factory
+```ts
+export default defineNuxtConfig({
+  modules: [
+    '@nuxt/eslint'
+  ],
+  eslint: {
+    config: {
+      stylistic: {
+        indent: 2,
+        quotes: 'single',
+        semi: false,
+      },
+    }
+  }
+})
+```
+
+### VSCodeで保存時に自動でフォーマットを行う設定
+.vscode/setting.jsonに以下を追加します。
+```json
+{
+  "editor.formatOnSave": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+}
+```
+
+## Flat ConfigとStylisticへの移行
+ここではESLintの設定ファイルを従来のeslintrcやprettierからESLint flat configやESLint stylisticに移行を行います。
+詳細は以下を参照してください。
+
+https://eslint.org/docs/latest/use/configure/migration-guide
+
+
+まず最初にNuxt ESLintをインストールします。
+```bash
+npm install --save-dev @nuxt/eslint eslint
+```
+
+### eslintrcからESLint flat configへの移行
+@nuxtjs/eslint-config-typescriptを削除します。
+```bash
+npm uninstall @nuxtjs/eslint-config-typescript
+```
+package.jsonから@nuxtjs/eslint-config-typescriptの記述を削除します。
+```diff
+"devDependencies": {
+- "@nuxtjs/eslint-config-typescript": "^12.1.0",
+},
+```
+
+.eslintrcを削除します。
+```diff
+- {
+-   "extends": [
+-     "@nuxtjs/eslint-config-typescript"
+-   ],
+-   "rules": {
+-     "no-console": "off"
+-   }
+- }
+```
+
+ルート配下にeslint.config.mjsファイルを新規作成して以下の内容で保存します。
+```js
+// eslint.config.mjs
+import withNuxt from './.nuxt/eslint.config.mjs'
+
+export default withNuxt(
+  {
+    // lintを適用するファイルを指定します。
+    files: ['**/*.js', '**/*.ts', '**/*.vue'],
+    // lintの適用対象外のファイルを指定します。--ignore-pathで指定していたファイルを指定します。
+    ignores: ['**/*.log*', '.cache/**'],
+    // 適用したいルールを記載します。
+    rules: {
+      'no-console': 'off',
+    },
+  },
+)
+```
+
+package.jsonのスクリプトを以下の内容で修正します。
+```diff
+"scripts": {
+- lint: "eslint --ext \".js,.ts,.vue\" --ignore-path .gitignore .",
++ lint: "eslint .",
+},
+```
+
+### prettierからESLint stylisticへの移行
+prettierとeslint-config-prettier、eslint-plugin-prettierを削除します。
+```bash
+npm uninstall prettier eslint-config-prettier eslint-plugin-prettier
+```
+package.jsonからprettierとeslint-config-prettier、eslint-plugin-prettierの記述を削除します。
+```diff
+"devDependencies": {
+- "eslint-plugin-prettier": "^5.1.0",
+- "eslint-config-prettier": "^8.3.0",
+- "prettier": "^2.5.1",
+},
+```
+
+.prettierrcファイルを削除します。
+```diff
+- {
+-   "indent": 2,
+-   "quotes": 'single',
+-   "semi": false
+- }
+```
+
+nuxt.config.tsにルールを追加します。
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: [
+    '@nuxt/eslint'
+  ],
+  eslint: {
+    config: {
+      stylistic: {
+        indent: 2,
+        quotes: 'single',
+        semi: false,
+      },
+    }
+  }
+})
+```
+package.jsonのscriptsにprettierの実行コマンドがある場合は削除しておきます。
+
+## [Vitestの設定](https://vitest.dev/)
+
+```bash
+# install Vitest
+npm install --save-dev vitest @testing-library/user-event @testing-library/vue happy-dom
+```
+
+プロジェクトのルート配下にvitest.config.tsを新規作成して以下の内容で保存します。
 ```ts
 // vitest.config.ts
 import path from 'path'
 import { defineConfig } from 'vitest/config'
-import Vue from '@vitejs/plugin-vue'
-import AutoImport from 'unplugin-auto-import/vite'
 
 export default defineConfig({
   resolve: {
@@ -169,34 +387,41 @@ package.jsonに以下を追加します。
 }
 ```
 
-### 自動インポート設定
-
-Nuxtで自動インポートされるrefなどの関数がvitestでは自動インポートされないため、以下のプラグインを使用してインポートします。
+### Nuxt自動インポート設定
+Nuxtが自動インポートする関数やコンポーネントを以下のライブラリを使用することでユニットテスト内でも自動インポートを行うことができます。
 ```bash
-# unplugin-auto-importのインストール
-# https://github.com/antfu/unplugin-auto-import
 npm install --save-dev unplugin-auto-import
+npm install --save-dev unplugin-vue-components
 ```
-vitest.config.tsにpluginsを追加します。
-pluginsのAutoImportのimportsにインポートしたいライブラリを記述します。
-
+vitest.config.tsに以下のpluginsを追加します。
 ```ts
 // vitest.config.ts
+import AutoImportFunctions from 'unplugin-auto-import/vite'
+import AutoImportComponents from 'unplugin-vue-components/vite'
+import Vue from '@vitejs/plugin-vue'
+
 export default defineConfig({
   plugins: [
     Vue(),
-    AutoImport({
-      // インポートするライブラリにはプリセットが用意されています
-      // https://github.com/antfu/unplugin-auto-import/tree/main/src/presets
-      imports: ['vue', 'pinia', 'vue-router']
-    })
+    // インポートしたいプラグインを指定. 指定できるプリセットは以下を参照ください。
+    // https://github.com/antfu/unplugin-auto-import/tree/main/src/presets
+    AutoImportFunctions ({ imports: [
+      'vue',
+      'vee-validate',
+      'vue-router',
+      'pinia',
+    ], dts: 'auto-imports.d.ts' }),
+    AutoImportComponents({
+      dirs: ['src/components'],
+      dts: '.nuxt/components.d.ts',
+    }),
   ],
 })
 ```
-以下のように設定することでプリセットにないライブラリをインポートすることもできます。
+プリセットを使用せずに直接インポートしたいプラグインを指定するには以下のように記載します。
 ```ts
 // vitest.config.ts
-AutoImport({
+AutoImportFunctions({
   imports: [
     {
       "nuxt/app": [
@@ -207,25 +432,28 @@ AutoImport({
 })
 ```
 
-### カバレッジの取得
-テストのカバレッジを取得するには追加で以下をインストールします。
+### カバレッジの計測
 ```bash
-npm install --save-dev @vitest/coverage-c8 vitest-sonar-reporter
+npm install --save-dev @vitest/coverage-v8 vitest-sonar-reporter
 ```
+
 vitest.config.tsのtestに以下の項目を追加します。
 ```ts
 // vitest.config.ts
 export default defineConfig({
   test: {
     coverage: {
-      provider: 'c8',
-      include: ['src/**/*.{vue,js,ts}'],    // src配下の特定の拡張子のファイルのみをテスト対象に設定
-      all: true,                            // 未テストのコードもカバレッジの対象にする
+      provider: 'v8',
+      // src配下の特定の拡張子のファイルのみをテスト対象に設定
+      include: ['src/**/*.{vue,js,ts}'],
+      // 未テストのコードもカバレッジの対象にする
+      all: true,
       reporter: ['html', 'clover', 'text']
     },
     root: '.',
     reporters: ['verbose', 'vitest-sonar-reporter'],
-    outputFile: 'test-report.xml'           // SonarQubeでテスト結果を解析するためのレポートを出力する
+    // SonarQubeでテスト結果を解析するためのレポートを出力する
+    outputFile: 'test-report.xml'
   }
 });
 ```
@@ -241,34 +469,33 @@ package.jsonのscriptsを以下のように修正 (--coverageを追加) しま�
 ```
 
 pagesディレクトリに以下のindex.vueファイルを追加します。
-```ts
+```vue
+// pages/index.vue
 <template>
-  <h1 data-testid="page-title">
+  <h1>
     Pages/index.vue
   </h1>
 </template>
 ```
 
-上記のindex.vueのテストコードは以下のようになります。
+ユニットテストの実装の一例としてindex.test.tsを新規作成して以下の内容で保存します。
 ```ts
+// index.test.ts
 import { describe, expect, test } from 'vitest'
-import { render } from '@testing-library/vue'
+import { render, screen } from '@testing-library/vue'
 import Index from '~/pages/index.vue'
 
 describe('Index', () => {
   test('Indexページにタイトルが表示されていること', () => {
     // Arrange
-    const { container } = render(Index)
-
-    // textContentは前後に空白を付与したテキストを返却するのでtrimで空白を除去する必要があります
-    const title = container.querySelector('[data-testid="page-title"]')?.textContent?.trim()
+    render(Index)
+    const title = screen.getByText('Pages/index.vue')
 
     // Assert
-    expect(title).toBe('Pages/index.vue')
+    expect(title).toBeTruthy()
   })
 })
 ```
-
 
 テストを実行するには以下のコマンドを実行します。
 ```bash
@@ -292,33 +519,30 @@ npm run test:linux
 npm run test:win
 ```
 
-## [VeeValidate](https://vee-validate.logaretm.com/v4/) Setup
+## [VeeValidateの設定](https://vee-validate.logaretm.com/v4/)
 ```bash
-# VeeValidateインストール
 npm install --save-dev vee-validate @vee-validate/i18n @vee-validate/rules
 ```
-pluginsフォルダにvee-validate-plugin.tsを新規作成し、以下を追加します。
+pluginsフォルダにvee-validate-plugin.tsを新規作成して以下の内容で保存します。
 ```ts
-// vee-validate-plugin.ts
+// plugins/vee-validate-plugin.ts
 import { localize, setLocale } from '@vee-validate/i18n'
-import en from '@vee-validate/i18n/dist/locale/en.json'
 import ja from '@vee-validate/i18n/dist/locale/ja.json'
-import AllRules from '@vee-validate/rules'
+import { all } from '@vee-validate/rules'
 import { defineRule, configure } from 'vee-validate'
 import { defineNuxtPlugin } from '#app'
 
 export default defineNuxtPlugin((_nuxtApp) => {
   configure({
     generateMessage: localize({
-      en,
       // エラーメッセージの日本語化
-      ja
-    })
+      ja,
+    }),
   })
 
-  Object.keys(AllRules).forEach((rule) => {
-    // すべてのルールをインポート
-    defineRule(rule, AllRules[rule])
+  // すべてのルールをインポート
+  Object.entries(all).forEach(([name, rule]) => {
+    defineRule(name, rule)
   })
 
   // エラーメッセージの日本語化
@@ -326,13 +550,13 @@ export default defineNuxtPlugin((_nuxtApp) => {
 })
 ```
 
-### フォームのバリデーション
+### Formのバリデーション
 vee-validate4ではバリデーションの実装方法として以下の2通りが存在します。
 * script setup内で実装
 * html内で実装
 
 #### script setup内の実装方法
-script setup内で実装する場合は、useForm・useFieldを用いてチェック対象のフィールド指定・バリデーションルールの定義を行います。
+script setup内で実装する場合は、useForm・useFieldを用いてチェック対象のフィールド指定、バリデーションルールの定義を行います。
 ```ts
 <script lang="ts" setup>
 import { useForm, useField } from 'vee-validate'
@@ -347,7 +571,7 @@ const { handleSubmit, errors, isSubmitting, meta } = useForm({
 })
 
 // バリデーション対象の項目を指定
-const { value: email } = useField('email')
+const { value: email } = useField<string>('email')
 
 // Submitボタン押下時に呼び出される関数
 const foo = () => {
@@ -376,13 +600,13 @@ const foo = handleSubmit(() => {
 ```
 
 #### html内の実装方法
-html内で実装する場合は、Form・Fieldコンポーネントを用いてチェック対象のフィールド指定・バリデーションルールの定義を行います。
+html内で実装する場合は、Form・Fieldコンポーネントを用いてチェック対象のフィールド指定、バリデーションルールの定義を行います。
 ```ts
 <script lang="ts" setup>
 import { Form, Field, ErrorMessage } from 'vee-validate'
 
 // Submitボタン押下時に呼び出される関数
-const foo = (values: Record<string, any>) => {
+const foo = (values: Record<string, string>) => {
   console.log(values.email)
 }
 </script>
@@ -390,7 +614,7 @@ const foo = (values: Record<string, any>) => {
 <template>
   <!-- フォームの定義。使用できるパラメータは以下を参照 -->
   <!-- https://vee-validate.logaretm.com/v4/api/use-form/#api-reference -->
-  <Form v-slot="{ meta, isSubmitting }" data-testid="validation-form" @submit="foo">
+  <Form v-slot="{ meta, isSubmitting }" @submit="foo">
     <!-- バリデーション対象の項目 -->
     <Field rules="required|email" name="email" as="input" type="text" />
 
@@ -406,67 +630,47 @@ const foo = (values: Record<string, any>) => {
 </template>
 ```
 
-## VeeValidate [Testing](https://vee-validate.logaretm.com/v4/guide/testing) 
-```bash
-# flush-promisesのインストール
-npm install --save-dev flush-promises
-```
-
-前項目の[VeeValidate Setup](#veevalidate-setup)で作成したvee-validate-plugin.tsはvee-validateの設定ファイルですが、
-Nuxtが起動時に読み込まれます。vitest実行時はNuxtが起動しないので、vee-validateを利用しているvueファイルのテストを実行するとvitest上でエラーが発生します。
+## [VeeValidateのテスト実装](https://vee-validate.logaretm.com/v4/guide/testing)
+前項目で作成したvee-validate-plugin.tsはvee-validateの設定ファイルですが、 Nuxtが起動時に読み込まれます。vitest実行時はNuxtが起動しないので、vee-validateを利用しているvueファイルのテストを実行するとvitest上でエラーが発生します。
 
 vitest.config.tsのsetupFilesにvee-validateの設定ファイルを指定することにより、vitest実行時にそのファイルの中身が実行されて上記事象を回避することができます。
 ```ts
 // vitest.config.ts
 export default defineConfig({
   test: {
-    // テスト実行時に以下で指定したファイルが読み込まれる
+    // テスト実行時に以下で指定したファイルが読み込まれる。
     setupFiles: './src/tests/unitTest/setup.ts'
   }
 })
 ```
-
-src/tests/unitTest配下にsetup.tsを新規作成し、以下を追加します。
+src/tests/unitTest配下にsetup.tsを新規作成して以下の内容で保存します。
 ```ts
-// setup.ts
+// .src/tests/unitTest/setup.ts
 import { localize, setLocale } from '@vee-validate/i18n'
-import en from '@vee-validate/i18n/dist/locale/en.json'
 import ja from '@vee-validate/i18n/dist/locale/ja.json'
-import AllRules from '@vee-validate/rules'
+import { all } from '@vee-validate/rules'
 import { defineRule, configure } from 'vee-validate'
-import { vi } from 'vitest'
-import flushPromises from 'flush-promises'
 
-// vee-validateセットアップ
+// vee-validate setup
 configure({
   generateMessage: localize({
-    en,
     // エラーメッセージの日本語化
-    ja
-  })
+    ja,
+  }),
 })
 
-Object.keys(AllRules).forEach((rule) => {
-  // すべてのバリデーションルール読み込み
-  defineRule(rule, AllRules[rule])
+// import vee-validate all rules
+Object.entries(all).forEach(([name, rule]) => {
+  defineRule(name, rule)
 })
 
 // エラーメッセージの日本語化
 setLocale('ja')
-
-// fireEvent実行後に以下の関数を呼ぶこと (fireEventでHTMLを操作した際に、操作結果をHTMLに反映させるため)
-export const waitPerfectly = async () => {
-  await flushPromises()
-  vi.runAllTimers()
-  await flushPromises()
-}
 ```
 
-vee-validateを利用した入力フォームへのテストコードの一例としては以下のようになります。
-以下ではinputタグで入力された値がemail形式であるかどうかをチェックしています。
+vee-validateを利用した入力フォームへのテストコードの一例としては以下のようになります。 以下ではinputタグで入力された値がemail形式であるかどうかをチェックしています。
 
 vee-validateのテストに関して詳細な情報は以下を参照ください。
-
 * https://vee-validate.logaretm.com/v4/guide/testing
 * https://github.com/testing-library/vue-testing-library/blob/main/src/__tests__/validate-plugin.js
 
@@ -475,69 +679,59 @@ vee-validateのテストに関して詳細な情報は以下を参照くださ�
 <script lang="ts" setup>
 import { Form, Field, ErrorMessage } from 'vee-validate'
 
-const foo = (values: Record<string, any>) => {
+const foo = (values: Record<string, string>) => {
   console.log(values.email)
 }
 </script>
 
 <template>
-  <Form v-slot="{ meta, isSubmitting }" data-testid="validation-form" @submit="foo">
-    <Field rules="required|email" name="email" as="input" type="text" data-testid="input-email" />
-    <ErrorMessage name="email"  data-testid="email-error-msg" />
-    <button :disabled="isSubmitting">Submit</button>
+  <Form v-slot="{ meta }" @submit="foo">
+    <Field rules="required|email" name="email" as="input" type="text" placeholder="email" />
+    <ErrorMessage name="email" />
+    <button :disabled="!meta.valid">Submit</button>
   </Form>
 </template>
 ```
 
 ```ts
 // form.spec.ts
-import { describe, expect, test, vi } from 'vitest'
-import { fireEvent, render } from '@testing-library/vue'
-import { waitPerfectly } from '../setup'
+import { expect, test } from 'vitest'
+import { render, screen } from '@testing-library/vue'
+import userEvent from '@testing-library/user-event'
 import Form from '~/pages/form.vue'
 
-vi.useFakeTimers()
-
-test('Email入力欄への入力はemail形式であること', async () => {
+test('should error message display', async () => {
   // Arrange
-  const { container } = render(Form)
-  // 入力項目の取得
-  const inputElement = container.querySelector('[data-testid="input-email"]') as HTMLInputElement
+  const user = userEvent.setup()
+  render(Form)
 
   // Act
-  // 入力項目へemail形式ではない値を入力
-  await fireEvent.update(inputElement, 'abc')
-  await fireEvent.blur(inputElement)
-  // 入力した値をHTMLへ反映
-  await waitPerfectly()
-  // エラーメッセージの取得
-  const errorMsg = container.querySelector('[data-testid="email-error-msg"]')?.textContent
+  await user.type(screen.getByPlaceholderText('email'), 'abc{Tab}')
 
   // Assert
-  expect(errorMsg).toBe('emailは有効なメールアドレスではありません')
+  expect(screen.getByText('emailは有効なメールアドレスではありません')).toBeTruthy()
 })
 ```
 
-## [Navigation guard](https://nuxt.com/docs/guide/directory-structure/middleware)
-特定のページへアクセスがあった場合に、指定したページへリダイレクトさせるにはmiddlewareディレクトリにリダイレクト処理を記述したファイルを作成します。
-ファイルの名前は以下のように設定することで異なる機能を持ちます。
-* xxxxx.ts (リダイレクト処理を有効にするには、有効にしたいvueファイルに以下を追加する)
+## [ナビゲーションガード](https://nuxt.com/docs/guide/directory-structure/middleware)
+特定のページへアクセスがあった場合に、指定したページへリダイレクトさせるにはmiddlewareディレクトリにリダイレクト処理を記述したファイルを作成します。 ファイルの名前は以下のように設定することで異なる機能を持ちます。
+
+* xxx.ts (リダイレクト処理を有効にするには、有効にしたいvueファイルに以下を追加する)
 ```ts
 // foo.vue
 <script setup>
 definePageMeta({
-  middleware: ["xxxxx"]
+  middleware: ["xxx"]
 })
 </script>
 ```
-* xxxxx.global.ts (全ページでリダイレクト処理が有効になる)
+* xxx.global.ts (全ページでリダイレクト処理が有効になる)
 
-以下は一例として、「/」にアクセスがあった場合にログインページへリダイレクトする処理を実装しています。
-詳細な実装方法は[こちら](https://nuxt.com/docs/guide/directory-structure/middleware)を参照ください。
+以下は一例として、「/」にアクセスがあった場合にログインページへリダイレクトする処理を実装しています。 詳細な実装方法は[こちら](https://nuxt.com/docs/guide/directory-structure/middleware)を参照ください。
 
 
 ```ts
-// redirect.global.ts
+// middleware/redirect.global.ts
 export default defineNuxtRouteMiddleware((to, from) => {
   // 「/」にアクセスがあった場合
   if (to.path === '/') {
@@ -546,14 +740,15 @@ export default defineNuxtRouteMiddleware((to, from) => {
   }
 })
 ```
-テストの実装に関しては[こちら](https://github.com/N-Laboratory/nuxt3-starter-guide-jpn/commit/6a2aab8f50d285967abb1ff3560c1a63eed724bb)を参照ください。
+テストの実装に関しては[こちら](https://github.com/N-Laboratory/nuxt3-starter-guide-example-jpn/blob/main/src/tests/unitTest/middleware/redirect.global.spec.ts)を参照ください。
 
 ## [Pinia](https://pinia.vuejs.org/ssr/nuxt.html) Setup
-piniaのgithubのissueで[こちら](https://github.com/vuejs/pinia/issues/853)で言及されているとおり、
-現在(2023年1月29日時点)piniaをインストールする際にnpmエラーが発生します。
+```bash
+# install Pinia
+npm install pinia @pinia/nuxt
+```
 
-エラーを回避するため公式ガイドの[こちら](https://pinia.vuejs.org/ssr/nuxt.html#installation)で紹介されている方法を実施します。
-package.jsonのoverridesに以下を追加します。
+If you're using npm, you might encounter an ERESOLVE unable to resolve dependency tree error. In that case, add the the following to your package.json:
 ```json
 {
   "overrides": {
@@ -561,26 +756,21 @@ package.jsonのoverridesに以下を追加します。
   }
 }
 ```
-package.jsonに上記を追加すれば以下のコマンドで問題なくpiniaのインストールができるようになります。
-```bash
-# piniaインストール
-npm install pinia @pinia/nuxt
-```
-インストール時に以下のエラーが出る場合はpackage.jsonのoverridesのvueのバージョンを直接指定する必要があります。
+
+If you see below error message, fix override:vue like below.
 ```bash
 npm ERR! Invalid comparator: latest
 ```
 
-以下のようにpackage.jsonを修正後に再度上記コマンドを実行することで正しくpiniaがインストールされるようになります。
 ```json
 {
   "overrides": {
-    "vue": "3.2.45"
+    "vue": "3.4.30"
   }
 }
 ```
 
-nuxt.config.tsのmodulesに以下を追加します。
+Add the following to nuxt.config.ts
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
@@ -588,30 +778,30 @@ export default defineNuxtConfig({
         ['@pinia/nuxt',
             {
                 autoImports: [
-                  // defineStoreの自動インポート
+                  // Import defineStore
                   'defineStore'
                 ]
-                // vuexも併用する場合は以下を追加
-                // disableVuex: false ,
+                // If you use vuex at the same time, add the following
+                // disableVuex: false
             }
         ]
     ]
 });
 ```
-### Storeの実装
-storeディレクトリにuser.tsを新規作成し、以下を追加します。
+### Store implementation
+Create user.ts in store directory and add the following to user.ts.
 ```ts
 // user.ts
-// nuxt.config.tsのautoImportsにdefineStoreを追加している場合はこのimport文は不要です。
+// If you add defineStore to autoImports in nuxt.config.ts, you don't need to import below
 import { defineStore } from 'pinia'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    // ユーザーの定義・初期化
+    // User definition and initialization
     user: { email: '', password: '' }
   }),
   actions: {
-    // ユーザー情報の更新
+    // Update use info
     setUserInfo (email: string, password: string) {
       this.user.email = email
       this.user.password = password
@@ -620,75 +810,128 @@ export const useUserStore = defineStore('user', {
 })
 ```
 
-vueファイルからstoreを参照するには次のようになります。
+Here is a sample code using store from vue file.
 ```ts
 // store.vue
 <script lang="ts" setup>
 import { useUserStore } from '../store/user'
 
-// storeの取得
+// Use store
 const store = useUserStore()
 
-// emailの取得
+// Get email from store user info
 const email = store.user.email
 
-// passwordの取得
+// Get password from store user info
 const password = store.user.password
 
-// ユーザー情報の更新
+// Update store user info
 store.setUserInfo("new email", "new password")
 </script>
 ```
 
 ## Pinia [Testing](https://pinia.vuejs.org/cookbook/testing.html)
 ```bash
-# @pinia/testingインストール
+# install @pinia/testing
 npm install --save-dev @pinia/testing
 ```
 
-vueファイルでpiniaを利用したstoreの参照をしている場合、テストコードを実行すると以下のエラーが発生します。
+When run test file using pinia, the following error occurs.
 ```bash
 getActivePinia was called with no active Pinia. Did you forget to install pinia?
 ```
-上記事象を回避するにはテストコードのbeforeEachに以下を追加します。
+To avoid this error, call setActivePinia function in beforeEach.
 ```ts
+import { beforeEach, describe, expect, test } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
+import { useUserStore } from '../../../store/user'
 
-beforeEach(() => {
-  setActivePinia(createPinia())
+const initialUser = {
+  email: '',
+  password: '',
+}
+const updatedUser = {
+  email: 'new email',
+  password: 'new password',
+}
+
+describe('Store', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  test('store user info should be initial state', () => {
+    // Arrange
+    const store = useUserStore()
+
+    // Assert
+    expect(store.user).toEqual(initialUser)
+  })
+
+  test('if you call setUserInfo(), store user info should update', () => {
+    // Arrange
+    const store = useUserStore()
+
+    // Act
+    store.setUserInfo(updatedUser.email, updatedUser.password)
+
+    // Assert
+    expect(store.user).toEqual(updatedUser)
+  })
 })
 ```
 
-storeに初期値を設定した状態でテストを実行するには、createTestingPiniaのinitialStateに定義します。
-実装の詳細は[こちら](https://pinia.vuejs.org/cookbook/testing.html#initial-state)を参照ください。
+You can set the initial state of all of your stores when creating a testing pinia by passing an initialState.
+See [this](https://pinia.vuejs.org/cookbook/testing.html#initial-state) for more details.
+```vue
+<script lang="ts" setup>
+import { useUserStore } from '../store/user'
+
+const store = useUserStore()
+const email = store.user.email
+const password = store.user.password
+</script>
+
+<template>
+  <div>
+    <p>Email: {{ email }}</p>
+    <p>Password: {{ password }}</p>
+  </div>
+</template>
+```
 ```ts
-import { beforeEach, test } from 'vitest'
-import { render } from '@testing-library/vue'
+import { beforeEach, expect, test } from 'vitest'
+import { render, screen } from '@testing-library/vue'
 import { setActivePinia, createPinia } from 'pinia'
 import { createTestingPinia } from '@pinia/testing'
-import Foo from '~/pages/foo.vue'
+import Foo from './pages/index.vue'
 
 beforeEach(() => {
   setActivePinia(createPinia())
 })
 
-test('storeのユーザー情報に初期値が設定されていること.', () => {
+test('store user info should set the initial value', () => {
   // Arrange
-  const { container } = render(Foo, {
+  render(Foo, {
     global: {
       plugins: [
         createTestingPinia({
           initialState: {
-            user: { user: { email: 'Initial email', password: 'Initial password' } }
-          }
-        })
-      ]
-    }
+            user: { user: { email: 'test@test.com', password: 'test' } },
+          },
+        }),
+      ],
+    },
   })
+
+  // Assert
+  expect(screen.getByText('Email: test@test.com')).toBeTruthy()
+  expect(screen.getByText('Password: test')).toBeTruthy()
 })
 ```
 ## [Data Fetching](https://nuxt.com/docs/getting-started/data-fetching)
-Nuxt3ではNuxt2で利用していたaxiosを使わなくなり、Fetch APIまたはunjs/ohmyfetchを利用してAPI呼び出しを行います。実装の詳細に関しては[こちら](https://nuxt.com/docs/getting-started/data-fetching)を参照ください。
+Nuxt provides useFetch instead of axios. It handles data fetching within your application.
+See [this](https://nuxt.com/docs/getting-started/data-fetching) for more details.
 ```ts
 // api.vue
 <script lang="ts" setup>
@@ -700,19 +943,529 @@ const { data: bar } = await useFetch('/api/v1/foo')
 </template>
 ```
 
-## E2E Testing By [Puppeteer](https://github.com/puppeteer/puppeteer)
+## [Storybook](https://storybook.js.org/docs) Setup
+Install Storybook
 ```bash
-# puppeteerインストール
+npx storybook@latest init --type vue3 --builder vite
+```
+
+Add the following to scripts in package.json
+```json
+"scripts": {
+  "storybook": "storybook dev -p 6006",
+},
+```
+
+[NOTE](https://github.com/storybookjs/storybook/blob/next/MIGRATION.md#framework-specific-vite-plugins-have-to-be-explicitly-added): In Storybook 7, It would automatically add frameworks-specific Vite plugins, e.g. @vitejs/plugin-react if not installed. In Storybook 8 those plugins have to be added explicitly in the user's vite.config.ts:
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+
+export default defineConfig({
+  plugins: [vue()],
+});
+```
+Without the above configurration, the follwing error will occur.
+```bash
+ [vite] Internal server error: Failed to parse source for import analysis because the content contains invalid JS syntax. Install @vitejs/plugin-vue to handle .vue files.
+```
+Create the new vue file and new story like this.
+```typescript
+// pages/index.vue
+<template>
+  <div>
+    Pages/index.vue
+  </div>
+</template>
+```
+```typescript
+// pages/index.stories.ts
+import type { Meta, StoryObj } from '@storybook/vue3'
+import Index from './index.vue'
+
+type Story = StoryObj<typeof Index>
+const meta: Meta<typeof Index> = {
+  title: 'Index',
+}
+
+export const Default: Story = {
+  render: () => ({
+    components: { Index },
+    template: '<Index />',
+  }),
+}
+
+export default meta
+```
+Run the following command to start storybook, and then you can access http://localhost:6006/
+```bash
+npm run storybook
+```
+Install [@nuxtjs/storybook](https://storybook.nuxtjs.org/getting-started/setup) dependency to your project.
+```bash
+npx nuxi@latest module add storybook
+```
+After installation this library, the following command will start nuxt and Storybook at the same time.
+```bash
+npm run dev
+```
+
+Add the following to modules in nuxt.config.ts.
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['@nuxtjs/storybook'],
+})
+```
+You can edit the storybook configuration with the storybook property in nuxt.config.ts.
+
+Add the following to nuxt.config.ts. See [more options](https://storybook.nuxtjs.org/getting-started/options).
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  storybook: {
+    host: 'http://localhost',
+    port: 6006,
+  },
+})
+```
+
+### Import configuration
+If you use an alias in a vue file, an error will occur like below when storybook is running.
+```bash
+TypeError: Failed to fetch dynamically imported module:
+```
+```ts
+// foo.vue
+import Foo from '~/components/Foo.vue'
+```
+
+Add an alias to viteFinal in .storybook/main.ts to avoid above error.
+```ts
+import type { StorybookConfig } from "@storybook/vue3-vite";
+import path from "path";
+
+const config: StorybookConfig = {
+  // add this
+  viteFinal: async (config) => {
+    if (config?.resolve?.alias) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@': path.resolve(__dirname, '../src'),
+        '~': path.resolve(__dirname, '../src'),
+      }
+    }
+    return config
+  },
+};
+```
+
+### Nuxt auto import configuration
+Storybook cannot import functions that are automatically imports by nuxt (e.g. ref, computed, and so on.).
+
+Install the following library to import nuxt auto-imports functions in storybook.
+- unplugin-auto-import
+```bash
+npm install --save-dev unplugin-auto-import
+```
+Add the following to viteFinal in .storybook/main.ts
+```ts
+import AutoImportFunctions from "unplugin-auto-import/vite";
+
+const config: StorybookConfig = {
+  viteFinal: async (config) => {
+    if (config?.plugins) {
+      // add this
+      config.plugins.push(
+        AutoImportFunctions ({ imports: [
+          'vue',
+          'vee-validate',
+          'vue-router',
+          'pinia',
+        ], dts: '.storybook/auto-imports.d.ts' }),
+      )
+    }
+    return config
+  },
+}
+```
+
+Storybook cannot import components that are automatically imports by nuxt.
+
+Install the following library to import nuxt auto-imports components in storybook.
+- unplugin-vue-components
+```bash
+npm install --save-dev unplugin-vue-components
+```
+Add the following to viteFinal in .storybook/main.ts
+```ts
+import AutoImportComponents from 'unplugin-vue-components/vite'
+
+const config: StorybookConfig = {
+  viteFinal: async (config) => {
+    if (config?.plugins) {
+      // add this
+      config.plugins.push(
+        AutoImportComponents({
+          dirs: ['src/components'],
+          dts: '.storybook/components.d.ts',
+        }),
+      )
+    }
+    return config
+  },
+}
+```
+
+### Using Pinia in Storybook
+Storybook cannot use pinia by default.
+The following error will occur when using pinia in vue file.
+```
+"getActivePinia()" was called but there was no active Pinia. Are you trying to use a store before calling "app.use(pinia)"?
+```
+To aboid this, add the follwing to .storybook/preview.ts.
+```ts
+// .storybook/preview.ts
+import { type Preview, setup } from '@storybook/vue3'
+import { type App } from 'vue'
+import { createPinia } from 'pinia'
+
+const pinia = createPinia()
+
+setup((app: App) => {
+  app.use(pinia)
+})
+```
+
+If you want to set initial state in store, add the follwing to each story in storybook.
+```ts
+import type { Meta, StoryObj } from '@storybook/vue3'
+import Index from './index.vue'
+import { useUserStore } from '~/store/user'
+
+type Story = StoryObj<typeof Index>
+
+const meta: Meta<typeof Index> = {
+  title: 'Index',
+}
+
+export const Default: Story = {
+  render: () => ({
+    setup() {
+      // add this
+      const store = useUserStore()
+      store.user.email = 'foo@bar.com'
+      store.user.password = 'foobar'
+    },
+    components: { Index },
+    template: '<Indesx />',
+  }),
+}
+
+export default meta
+
+```
+
+
+### Using Vee-Validate in Storybook
+Storybook cannot use Vee-Validate by default.
+The following error will occur when using Vee-Validate in vue file.
+```
+Error: No such validator 'XXXX' exists.
+```
+To aboid this, add the follwing to .storybook/preview.ts.
+```ts
+// .storybook/preview.ts
+import { localize } from '@vee-validate/i18n'
+import en from '@vee-validate/i18n/dist/locale/en.json'
+import { all } from '@vee-validate/rules'
+import { defineRule, configure } from 'vee-validate'
+
+configure({
+  generateMessage: localize({ en }),
+})
+
+Object.entries(all).forEach(([name, rule]) => {
+  // import all validation-rules
+  defineRule(name, rule)
+})
+```
+
+### Mocking API Request in Storybook
+Use msw to mock Rest and GraphQL requests right inside your story in storybook. With msw-storybook-addon, you can easily mock your APIs, making that process much simpler.
+```bash
+npm install --save-dev msw msw-storybook-addon
+npx msw init public/
+```
+Enable MSW in Storybook by initializing MSW and providing the MSW decorator in ./storybook/preview.js
+```ts
+// .storybook\preview.ts
+import { initialize, mswLoader } from 'msw-storybook-addon'
+
+// Initialize MSW
+initialize()
+
+const preview: Preview = {
+  // Provide the MSW addon loader globally
+  loaders: [mswLoader],
+}
+
+export default preview
+```
+Then ensure the staticDirs property in your Storybook configuration will include the generated service worker file (in /public, by default).
+```ts
+// .storybook\main.ts
+const config: StorybookConfig = {
+  staticDirs: ['../public'],
+}
+export default config
+```
+Here is an example uses the fetch API to make network requests.
+```ts
+// index.vue
+<script lang="ts" setup>
+import { useFetch } from '@vueuse/core'
+
+const uuid = ref('')
+const handleClick = async () => {
+  const { data } = await useFetch('https://httpbin.org/uuid').json()
+  uuid.value = data.value.uuid
+}
+</script>
+
+<template>
+  <div>
+    <input type="submit" value="Get uuid" @click="handleClick">
+    <p>UUID = {{ uuid }}</p>
+  </div>
+</template>
+```
+```ts
+// index.stories.ts
+import type { Meta, StoryObj } from '@storybook/vue3'
+import { http, HttpResponse } from 'msw'
+import Index from './index.vue'
+
+type Story = StoryObj<typeof Index>
+
+const meta: Meta<typeof Index> = {
+  title: 'Index',
+}
+
+export const Default: Story = {
+  render: () => ({
+    components: { Index },
+    template: '<Index />',
+  }),
+  parameters: {
+    msw: {
+      handlers: [
+        http.get('https://httpbin.org/uuid', () => {
+          return HttpResponse.json({
+            uuid: 'test uuid',
+          })
+        }),
+      ],
+    },
+  },
+}
+
+export default meta
+```
+msw-storybook-addon starts MSW with default configuration. If you want to configure it, you can pass options to the initialize function. They are the StartOptions from setupWorker.
+A common example is to configure the onUnhandledRequest behavior, as MSW logs a warning in case there are requests which were not handled.
+If you want MSW to bypass unhandled requests and not do anything:
+```ts
+// preview.ts
+import { initialize } from 'msw-storybook-addon';
+
+initialize({
+  onUnhandledRequest: 'bypass'
+})
+```
+
+### Run interaction testing inside Storybook
+Storybook's test addon allows you to test your components directly inside Storybook. It does this by using a Vitest plugin to transform your stories into Vitest tests using portable stories.
+
+Before installing, make sure your project meets the following requirements:
+- Storybook ≥ 8.4
+- A Storybook framework that uses Vite (e.g. vue3-vite), or the Storybook Next.js framework
+- Vitest ≥ 2.1
+
+Run the following command to install and configure the addon, which contains the plugin to run your stories as tests using Vitest:
+```bash
+npx storybook add @storybook/experimental-addon-test
+```
+That add command will install and register the test addon. It will also inspect your project's Vite and Vitest setup, and install and configure them with sensible defaults, if necessary.
+Make sure the following ts file have been created.
+```ts
+// vitest.workspace.ts
+import path from 'path'
+import { defineWorkspace } from 'vitest/config'
+import { storybookTest } from '@storybook/experimental-addon-test/vitest-plugin'
+import { storybookVuePlugin } from '@storybook/vue3-vite/vite-plugin'
+import AutoImportFunctions from 'unplugin-auto-import/vite'
+import AutoImportComponents from 'unplugin-vue-components/vite'
+
+export default defineWorkspace([
+  'vitest.config.ts',
+  {
+    extends: 'vite.config.ts',
+    plugins: [
+      storybookTest({ configDir: '.storybook' }),
+      storybookVuePlugin(),
+      // Import nuxt-auto-imports functions
+      AutoImportFunctions ({ imports: [
+        'vue',
+        'vee-validate',
+        'vue-router',
+        'pinia',
+      ], dts: '.storybook/auto-imports.d.ts',
+      }),
+      // Import nuxt-auto-imports components
+      AutoImportComponents({
+        dirs: ['src/components'],
+        dts: '.storybook/components.d.ts',
+      }),
+    ],
+    resolve: {
+      alias: {
+        '~': path.resolve(__dirname, './src'),
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+    test: {
+      name: 'storybook',
+      browser: {
+        enabled: true,
+        headless: true,
+        name: 'chromium',
+        provider: 'playwright',
+      },
+      include: ['**/*.stories.?(m)[jt]s?(x)'],
+      setupFiles: ['.storybook/vitest.setup.ts'],
+    },
+  },
+])
+```
+Add the follwing to scripts in package.json.
+--project=storybook will run tests only stories.ts.
+```json
+  "scripts": {
+    "test:storybook": "vitest --project=storybook",
+  },
+```
+
+Here is an example.
+```ts
+// index.vue
+<script lang="ts" setup>
+import { useFetch } from '@vueuse/core'
+
+const uuid = ref('')
+const handleClick = async () => {
+  const { data } = await useFetch('https://httpbin.org/uuid').json()
+  uuid.value = data.value.uuid
+}
+</script>
+
+<template>
+  <div>
+    <input type="submit" value="Get uuid" @click="handleClick">
+    <p>UUID = {{ uuid }}</p>
+  </div>
+</template>
+```
+```ts
+// index.stories.ts
+import type { Meta, StoryObj } from '@storybook/vue3'
+import { http, HttpResponse } from 'msw'
+import { within, userEvent } from '@storybook/test'
+import Index from './index.vue'
+
+type Story = StoryObj<typeof Index>
+
+const meta: Meta<typeof Index> = {
+  title: 'Index',
+}
+export default meta
+
+export const GetUuid: Story = {
+  render: () => ({
+    components: { Index },
+    template: '<Index />',
+  }),
+  parameters: {
+    msw: {
+      handlers: [
+        http.get('https://httpbin.org/uuid', () => {
+          return HttpResponse.json({
+            uuid: 'test uuid',
+          })
+        }),
+      ],
+    },
+  },
+  play: async ({ canvasElement }) => {
+    // Arrange
+    const canvas = within(canvasElement)
+
+    // Act
+    await userEvent.click(await canvas.findByText('Get uuid'))
+
+    // Assert
+    await expect(canvas.getByText('UUID = test uuid')).toBeInTheDocument()
+  },
+}
+```
+Run the following command to run tests.
+```bash
+npm run test:storybook
+```
+
+## E2E Testing By [Puppeteer](https://github.com/puppeteer/puppeteer)
+Most things that you can do manually in the browser can be done using Puppeteer as E2E testing.
+```bash
+# install Puppeteer
 npm install --save-dev puppeteer
 ```
-以下は入力フォームのe2eテストのサンプルです。
-入力項目（email, password）に値を入力した場合、送信ボタンが活性となり押下できることをテストしています。
+```vue
+<script lang="ts" setup>
+import { Form, Field } from 'vee-validate'
+</script>
+
+<template>
+  <Form v-slot="{ meta, isSubmitting }">
+    <Field
+      rules="required|email"
+      name="email"
+      as="input"
+      type="text"
+    />
+    <Field
+      rules="required"
+      name="password"
+      as="input"
+      type="text"
+    />
+    <button
+      :disabled="isSubmitting || !meta.valid"
+      data-testid="submit-btn"
+    >
+      Submit
+    </button>
+  </Form>
+</template>
+```
+Here is a sample E2E testing code.
+It tests submit button state.
 ```ts
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { launch, PuppeteerLaunchOptions } from 'puppeteer'
 import type { Browser, Page } from 'puppeteer'
 
-// ブラウザの起動オプションの設定。使用できるパラメータに関しての詳細は以下を参照ください。
+// Set browser launch option. See the following for more details.
 // https://pptr.dev/api/puppeteer.browserlaunchargumentoptions
 const options: PuppeteerLaunchOptions = {
   headless: false,
@@ -738,32 +1491,32 @@ describe('E2E', () => {
     await browser.close()
   })
 
-   test('1-入力フォームに有効な値を入力した場合、送信ボタンが押下できること', async () => {
+   test('1-If you input a valid value, submit button should enable', async () => {
       try {
-        // Act
-        // ページ遷移
+        // Arrange
         await page.goto('http://localhost:3000/foo')
 
-        // emailの入力
+        // Act
+        // Input email
         await page.type('input[name="email"]', 'foo@bar.com')
 
-        // passwordの入力
+        // Input password
         await page.type('input[name="password"]', 'foo')
 
-        // 送信ボタンの表示状態の取得 非活性→true 活性→false
+        // Get submit button state. inactive → true, active → false
         const isDisabled = await page.$eval(
           '[data-testid="submit-btn"]',
           element => (element as HTMLButtonElement).disabled
         )
 
-        // エビデンスの取得（スクリーンショットの撮影）
+        // Take a screenshot
         await page.screenshot({
           path: './src/tests/e2eTest/evidence/pages/foo/test-01.png',
           fullPage: true
         })
 
         // Assert
-        expect(isDisabled).toBeFalsy()
+        expect(isDisabled).toBe(false)
       } catch (e) {
         console.error(e)
         expect(e).toBeUndefined()
@@ -771,7 +1524,7 @@ describe('E2E', () => {
     }, 60000)
 })
 ```
-E2Eテストを実行するには、package.jsonのconfig:pathにテストしたいファイルのパスを記載して以下のコマンドを実行します。
+To run E2E testing, add the test file path to config:path in package.json.
 ```json
 {
   "config": {
@@ -780,44 +1533,42 @@ E2Eテストを実行するには、package.jsonのconfig:pathにテストした
 }
 ```
 ```bash
-# アプリの起動
+# run application server
 npm run dev
 
-# E2Eテスト実行（Linux/Macの場合）
-npm run test:linux
-
-# E2Eテスト実行（Windowsの場合）
-npm run test:win
+# run E2E testing
+npm run test:e2e
 ```
 
 ## Analyzing source code by [SonarQube](https://docs.sonarqube.org/latest/)
+SonarQube is a self-managed, automatic code review tool that systematically helps you deliver clean code.
 ```bash
+# install SonarQube tools
 npm install --save-dev sonarqube-scanner vitest-sonar-reporter
 ```
 
-vitest.config.tsに以下を追加します。
-* testのcoverageのreporterにlcovを追加
-* testにreportersとoutputFileを追加
+Add the following to vitest.config.ts.
+* add lcov to reporter
+* add reporters and outputFile to test
 ```ts
 // vitest.config.ts
 export default defineConfig({
   test: {
     coverage: {
-      // lcovを指定することでSonarQubeがテストのカバレッジを参照するためのファイル（lcov.info）を生成する
+      // To collect coverage by SonarQube, add lcov.
       reporter: ['html', 'clover', 'text', 'lcov']
     },
-    // テスト結果をSonarQubeの解析用に出力する
+    // To analyze your test code by SonarQube, output test report file
     reporters: ['verbose', 'vitest-sonar-reporter'],
     outputFile: 'test-report.xml',
   }
 })
 ```
 
-プロジェクトのルート配下にsonar-project.propertiesを新規作成して、以下を追加します。
-各プロパティの詳細に関しては[こちら](https://docs.sonarqube.org/9.6/project-administration/narrowing-the-focus/)を参照ください。
+Create sonar-project.properties in root directory and add the following to sonar-project.properties. See [this](https://docs.sonarqube.org/9.6/project-administration/narrowing-the-focus/) for more details.
 ```properties
-sonar.projectKey=nuxt3-starter-guide-jpn
-sonar.projectName=nuxt3-starter-guide-jpn
+sonar.projectKey=nuxt3-starter-guide
+sonar.projectName=nuxt3-starter-guide
 sonar.sources=src
 sonar.tests=src/tests/
 sonar.test.inclusions=src/tests/**/*.spec.ts
@@ -827,33 +1578,36 @@ sonar.javascript.file.suffixes=.js,.jsx
 sonar.typescript.file.suffixes=.ts,.tsx,.vue
 sonar.typescript.lcov.reportPaths=coverage/lcov.info
 sonar.javascript.lcov.reportPaths=coverage/lcov.info
-sonar.login=sqp_XXXXXXXXXXXXXXXXXXXXXX
+sonar.host.url=http://localhost:9000
+sonar.token=sqp_XXXXXXXXXXXXXXXXXXXXXX
 ```
 
-### SonarQubeプロジェクトの作成
-以降の手順では、SonarQubeのインストールが完了していて、localhostの9000番で起動していることを前提とします。
+### Create a SonarQube project
+Make sure you have installed SonarQube (v10.7) on your development machine.
+Run SonarQube server as localhost:9000 before do the following.
 
-SonarQubeプロジェクトの作成およびプロジェクトトークンの生成には以下の手順を実施します。
+To create a SonarQube project, do the following.
+1. Access the following url.
+http://localhost:9000/projects/create
 
-1. 次のURLにアクセスします。
-http://localhost:9000/projects
+1. Click [Create a local project]
 
-1. Create Project > Manuallyを選択します。
+1. Input __nuxt3-starter-guide__ in Project display name and Project key. Click [Next]
 
-1. Create a project画面でProject display nameとProject keyにnuxt3-starter-guide-jpnを設定してSet Upを押下します。
+1. Select [Use the global setting] and click [Create project]
 
-1. 「How do you want to analyze your repository?」と表示されるのでLocallyを押下します。
+1. Click [Locally]
 
-1. Provide a token欄のGenerate a project tokenを選択し、Generateを押下することでプロジェクトトークンが生成されます。
+1. Click [Generate] and then generate project token
 
-### コード解析の実施
-sonar-project.propertiesのsonar.loginに上記で生成したSonarQubeのプロジェクトトークンを指定します。
-トークンに関しての詳細は[こちら](https://docs.sonarqube.org/latest/user-guide/user-account/generating-and-using-tokens/)をご参照ください。
+### Analyze your source code
+Add project token to sonar.token in sonar-project.properties.
+See [this](https://docs.sonarqube.org/latest/user-guide/user-account/generating-and-using-tokens/) for more details of token.
 ```properties
-sonar.login=sqp_XXXXXXXXXXXXXXXXXXXXXX
+sonar.token=sqp_XXXXXXXXXXXXXXXXXXXXXX
 ```
 
-package.jsonのscriptsに以下の項目を追加します。
+Add the following to scripts in package.json.
 ```json
 {
   "scripts": {
@@ -862,14 +1616,15 @@ package.jsonのscriptsに以下の項目を追加します。
 }
 ```
 
-SonarQubeのコード解析を実施するには以下のコマンドを実行します。
+Run below command to run SonarQube analysis.
 ```bash
-# テストの全件実行
+# run all tests
 npm run test:all
 
-# SonarQubeのコード解析実行
+# run SonarQube analysis
 npm run sonar
 ```
-解析終了後は以下のURLより、結果を確認することができます。
 
-http://localhost:9000/dashboard?id=nuxt3-starter-guide-jpn
+You can access the following url to show result.
+
+http://localhost:9000/dashboard?id=nuxt3-starter-guide
