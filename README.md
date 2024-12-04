@@ -47,8 +47,8 @@ Nuxt3のテンプレートプロジェクト。
 1. [VeeValidateのテスト実装](#veevalidateのテスト実装)
 1. [Navigation guard](#navigation-guard)
 1. [Piniaの設定](#piniaの設定)
-1. [Pinia Testing](#pinia-testing)
-1. [Data Fetching](#data-fetching)
+1. [Piniaのテスト実装](#piniaのテスト実装)
+1. [データフェッチ](#データフェッチ)
 1. [Storybookの設定](#storybookの設定)
 1. [E2E Testing By Puppeteer](#e2e-testing-by-puppeteer)
 1. [Analyzing source code by SonarQube](#analyzing-source-code-by-sonarqube)
@@ -742,13 +742,13 @@ export default defineNuxtRouteMiddleware((to, from) => {
 ```
 テストの実装に関しては[こちら](https://github.com/N-Laboratory/nuxt3-starter-guide-example-jpn/blob/main/src/tests/unitTest/middleware/redirect.global.spec.ts)を参照ください。
 
-## [Pinia](https://pinia.vuejs.org/ssr/nuxt.html) Setup
+## [Piniaの設定](https://pinia.vuejs.org/ssr/nuxt.html)
 ```bash
-# install Pinia
 npm install pinia @pinia/nuxt
 ```
+piniaのgithubのissueで[こちら](https://github.com/vuejs/pinia/issues/853)で言及されているとおり、 piniaをインストールする際にnpmエラーが発生します。
 
-If you're using npm, you might encounter an ERESOLVE unable to resolve dependency tree error. In that case, add the the following to your package.json:
+エラーを回避するため公式ガイドの[こちら](https://pinia.vuejs.org/ssr/nuxt.html#Installation)で紹介されている方法を実施します。 package.jsonのoverridesに以下を追加します。
 ```json
 {
   "overrides": {
@@ -756,8 +756,7 @@ If you're using npm, you might encounter an ERESOLVE unable to resolve dependenc
   }
 }
 ```
-
-If you see below error message, fix override:vue like below.
+以下のエラーが表示される場合はoverrideのvueに直接バージョンを指定します。
 ```bash
 npm ERR! Invalid comparator: latest
 ```
@@ -770,38 +769,36 @@ npm ERR! Invalid comparator: latest
 }
 ```
 
-Add the following to nuxt.config.ts
+nuxt.config.tsのmodulesに以下を追加します。
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
     modules: [
         ['@pinia/nuxt',
             {
-                autoImports: [
-                  // Import defineStore
-                  'defineStore'
-                ]
-                // If you use vuex at the same time, add the following
-                // disableVuex: false
+              autoImports: [
+                // defineStore関数の自動インポート。
+                'defineStore'
+              ]
+              // vuexを併用する場合は以下を追加してください。
+              // disableVuex: false
             }
         ]
     ]
 });
 ```
-### Store implementation
-Create user.ts in store directory and add the following to user.ts.
+### Storeの実装
+store配下にuser.tsを新規作成して以下の内容で保存します。
 ```ts
-// user.ts
-// If you add defineStore to autoImports in nuxt.config.ts, you don't need to import below
+// store/user.ts
+// nuxt.config.tsのautoImportsでdefineStoreを指定している場合は以下のインポート分は不要です。
 import { defineStore } from 'pinia'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    // User definition and initialization
     user: { email: '', password: '' }
   }),
   actions: {
-    // Update use info
     setUserInfo (email: string, password: string) {
       this.user.email = email
       this.user.password = password
@@ -809,42 +806,40 @@ export const useUserStore = defineStore('user', {
   }
 })
 ```
-
-Here is a sample code using store from vue file.
+storeをvueファイルで使用するサンプルコードは以下の通りです。
 ```ts
-// store.vue
+// pages/store.vue
 <script lang="ts" setup>
-import { useUserStore } from '../store/user'
+import { useUserStore } from '~/store/user'
 
-// Use store
+// storeの取得
 const store = useUserStore()
 
-// Get email from store user info
+// storeからemailの取得
 const email = store.user.email
 
-// Get password from store user info
+// storeからpasswordの取得
 const password = store.user.password
 
-// Update store user info
+// storeの更新
 store.setUserInfo("new email", "new password")
 </script>
 ```
 
-## Pinia [Testing](https://pinia.vuejs.org/cookbook/testing.html)
+## [Piniaのテスト実装](https://pinia.vuejs.org/cookbook/testing.html)
 ```bash
-# install @pinia/testing
 npm install --save-dev @pinia/testing
 ```
 
-When run test file using pinia, the following error occurs.
+piniaを利用したvueファイルのテストを実行した場合に以下のエラーが発生します。
 ```bash
 getActivePinia was called with no active Pinia. Did you forget to install pinia?
 ```
-To avoid this error, call setActivePinia function in beforeEach.
+上記のエラーを回避するためにbeforeEachでsetActivePinia関数をコールします。
 ```ts
 import { beforeEach, describe, expect, test } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
-import { useUserStore } from '../../../store/user'
+import { useUserStore } from '~/store/user'
 
 const initialUser = {
   email: '',
@@ -860,7 +855,7 @@ describe('Store', () => {
     setActivePinia(createPinia())
   })
 
-  test('store user info should be initial state', () => {
+  test('storeが初期化されていること', () => {
     // Arrange
     const store = useUserStore()
 
@@ -868,7 +863,7 @@ describe('Store', () => {
     expect(store.user).toEqual(initialUser)
   })
 
-  test('if you call setUserInfo(), store user info should update', () => {
+  test('setUserInfo関数を実行するとストアの値が更新されること', () => {
     // Arrange
     const store = useUserStore()
 
@@ -880,12 +875,12 @@ describe('Store', () => {
   })
 })
 ```
-
-You can set the initial state of all of your stores when creating a testing pinia by passing an initialState.
-See [this](https://pinia.vuejs.org/cookbook/testing.html#initial-state) for more details.
-```vue
+storeの初期値を設定することもできます。
+詳細は[こちら](https://pinia.vuejs.org/cookbook/testing.html#initial-state)を参照してください。
+```ts
+// pages/index.vue
 <script lang="ts" setup>
-import { useUserStore } from '../store/user'
+import { useUserStore } from '~/store/user'
 
 const store = useUserStore()
 const email = store.user.email
@@ -904,7 +899,7 @@ import { beforeEach, expect, test } from 'vitest'
 import { render, screen } from '@testing-library/vue'
 import { setActivePinia, createPinia } from 'pinia'
 import { createTestingPinia } from '@pinia/testing'
-import Foo from './pages/index.vue'
+import Foo from '~/pages/index.vue'
 
 beforeEach(() => {
   setActivePinia(createPinia())
@@ -929,11 +924,11 @@ test('store user info should set the initial value', () => {
   expect(screen.getByText('Password: test')).toBeTruthy()
 })
 ```
-## [Data Fetching](https://nuxt.com/docs/getting-started/data-fetching)
-Nuxt provides useFetch instead of axios. It handles data fetching within your application.
-See [this](https://nuxt.com/docs/getting-started/data-fetching) for more details.
+## [データフェッチ](https://nuxt.com/docs/getting-started/data-fetching)
+Nuxtは従来のaxiosにかわりuseFetchの使用を推奨しています。
+詳細は[こちら](https://nuxt.com/docs/getting-started/data-fetching)を参照してください。
 ```ts
-// api.vue
+// pages/api.vue
 <script lang="ts" setup>
 const { data: bar } = await useFetch('/api/v1/foo')
 </script>
@@ -943,20 +938,20 @@ const { data: bar } = await useFetch('/api/v1/foo')
 </template>
 ```
 
-## [Storybook](https://storybook.js.org/docs) Setup
-Install Storybook
+## [Storybookの設定](https://storybook.js.org/docs)
 ```bash
 npx storybook@latest init --type vue3 --builder vite
 ```
-
-Add the following to scripts in package.json
+package.jsonのscriptsに以下を追加します。
 ```json
 "scripts": {
   "storybook": "storybook dev -p 6006",
 },
 ```
+Storybook 7では自動的にプラグインの設定が行われていましたが、Stroybook 8からは明示的に設定を行う必要があります。
+詳細は[こちら](https://github.com/storybookjs/storybook/blob/next/MIGRATION.md#framework-specific-vite-plugins-have-to-be-explicitly-added)を参照してください。
 
-[NOTE](https://github.com/storybookjs/storybook/blob/next/MIGRATION.md#framework-specific-vite-plugins-have-to-be-explicitly-added): In Storybook 7, It would automatically add frameworks-specific Vite plugins, e.g. @vitejs/plugin-react if not installed. In Storybook 8 those plugins have to be added explicitly in the user's vite.config.ts:
+vite.config.tsに以下を追加します。
 ```ts
 // vite.config.ts
 import { defineConfig } from "vite";
@@ -966,11 +961,11 @@ export default defineConfig({
   plugins: [vue()],
 });
 ```
-Without the above configurration, the follwing error will occur.
+上記の設定を行わない場合は以下のエラーが表示されます。
 ```bash
  [vite] Internal server error: Failed to parse source for import analysis because the content contains invalid JS syntax. Install @vitejs/plugin-vue to handle .vue files.
 ```
-Create the new vue file and new story like this.
+以下のvueファイルとstoryを新規作成します。
 ```typescript
 // pages/index.vue
 <template>
@@ -998,29 +993,33 @@ export const Default: Story = {
 
 export default meta
 ```
-Run the following command to start storybook, and then you can access http://localhost:6006/
+以下のコマンドを実行してstorybookを起動します。
 ```bash
 npm run storybook
 ```
-Install [@nuxtjs/storybook](https://storybook.nuxtjs.org/getting-started/setup) dependency to your project.
+以下のURLにアクセスすることで作成したstoryを表示することができます。
+
+http://localhost:6006/
+
+
+NuxtとStorybookを統合するために[@nuxtjs/storybook](https://storybook.nuxtjs.org/getting-started/setup)をプロジェクトに追加します。
 ```bash
 npx nuxi@latest module add storybook
 ```
-After installation this library, the following command will start nuxt and Storybook at the same time.
-```bash
-npm run dev
-```
 
-Add the following to modules in nuxt.config.ts.
+nuxt.config.tsのmodulesに以下を追加します。
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
   modules: ['@nuxtjs/storybook'],
 })
 ```
-You can edit the storybook configuration with the storybook property in nuxt.config.ts.
+インストール後は1つのコマンドでNuxtとStorybookを同時に起動することができます。
+```bash
+npm run dev
+```
 
-Add the following to nuxt.config.ts. See [more options](https://storybook.nuxtjs.org/getting-started/options).
+nuxt.config.tsでstorybookの設定を粉うことができます。指定できるプロパティは[こちら](https://storybook.nuxtjs.org/getting-started/options)を参照してください。
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
@@ -1031,8 +1030,8 @@ export default defineNuxtConfig({
 })
 ```
 
-### Import configuration
-If you use an alias in a vue file, an error will occur like below when storybook is running.
+### インポートの設定
+vueファイル内でエイリアスを使用したインポートを使用している場合に以下のエラーが発生します。
 ```bash
 TypeError: Failed to fetch dynamically imported module:
 ```
@@ -1040,14 +1039,15 @@ TypeError: Failed to fetch dynamically imported module:
 // foo.vue
 import Foo from '~/components/Foo.vue'
 ```
+上記のエラーを回避するために.storybook/main.tsに以下を追加します。
 
-Add an alias to viteFinal in .storybook/main.ts to avoid above error.
+※以下はソースディレクトリをsrcに変更している想定としています。
 ```ts
 import type { StorybookConfig } from "@storybook/vue3-vite";
 import path from "path";
 
 const config: StorybookConfig = {
-  // add this
+  // 以下を追加
   viteFinal: async (config) => {
     if (config?.resolve?.alias) {
       config.resolve.alias = {
@@ -1061,22 +1061,23 @@ const config: StorybookConfig = {
 };
 ```
 
-### Nuxt auto import configuration
-Storybook cannot import functions that are automatically imports by nuxt (e.g. ref, computed, and so on.).
-
-Install the following library to import nuxt auto-imports functions in storybook.
+### Nuxtの自動インポート設定
+StorybookはNuxtが自動インポートする関数やコンポーネントを利用することができません。
+以下のライブラリを導入することで自動インポートをStorybookにも適用します。
 - unplugin-auto-import
+- unplugin-vue-components
 ```bash
 npm install --save-dev unplugin-auto-import
+npm install --save-dev unplugin-vue-components
 ```
-Add the following to viteFinal in .storybook/main.ts
+.storybook/main.tsのviteFinalに以下を追加します。
 ```ts
 import AutoImportFunctions from "unplugin-auto-import/vite";
 
 const config: StorybookConfig = {
   viteFinal: async (config) => {
     if (config?.plugins) {
-      // add this
+      // 以下を追加
       config.plugins.push(
         AutoImportFunctions ({ imports: [
           'vue',
@@ -1085,29 +1086,10 @@ const config: StorybookConfig = {
           'pinia',
         ], dts: '.storybook/auto-imports.d.ts' }),
       )
-    }
-    return config
-  },
-}
-```
-
-Storybook cannot import components that are automatically imports by nuxt.
-
-Install the following library to import nuxt auto-imports components in storybook.
-- unplugin-vue-components
-```bash
-npm install --save-dev unplugin-vue-components
-```
-Add the following to viteFinal in .storybook/main.ts
-```ts
-import AutoImportComponents from 'unplugin-vue-components/vite'
-
-const config: StorybookConfig = {
-  viteFinal: async (config) => {
-    if (config?.plugins) {
-      // add this
+      // 以下を追加
       config.plugins.push(
         AutoImportComponents({
+          // 自動インポートするコンポーネントが存在するディレクトリを指定
           dirs: ['src/components'],
           dts: '.storybook/components.d.ts',
         }),
@@ -1118,17 +1100,18 @@ const config: StorybookConfig = {
 }
 ```
 
-### Using Pinia in Storybook
-Storybook cannot use pinia by default.
-The following error will occur when using pinia in vue file.
+### StorybookのPinia (Store) 設定
+Storybookはデフォルトではpiniaを使用することができません。
+
+piniaを使用したvueファイルのstoryを表示した際に以下のエラーが表示されます。
 ```
 "getActivePinia()" was called but there was no active Pinia. Are you trying to use a store before calling "app.use(pinia)"?
 ```
-To aboid this, add the follwing to .storybook/preview.ts.
+上記エラーを回避するために.storybook/preview.tsに以下を追加します。
 ```ts
 // .storybook/preview.ts
 import { type Preview, setup } from '@storybook/vue3'
-import { type App } from 'vue'
+import type { App } from 'vue'
 import { createPinia } from 'pinia'
 
 const pinia = createPinia()
@@ -1137,8 +1120,7 @@ setup((app: App) => {
   app.use(pinia)
 })
 ```
-
-If you want to set initial state in store, add the follwing to each story in storybook.
+Storyでstoreの初期値を設定するには以下を実装します。
 ```ts
 import type { Meta, StoryObj } from '@storybook/vue3'
 import Index from './index.vue'
@@ -1153,7 +1135,7 @@ const meta: Meta<typeof Index> = {
 export const Default: Story = {
   render: () => ({
     setup() {
-      // add this
+      // 以下を追加します
       const store = useUserStore()
       store.user.email = 'foo@bar.com'
       store.user.password = 'foobar'
@@ -1164,66 +1146,75 @@ export const Default: Story = {
 }
 
 export default meta
-
 ```
 
-
-### Using Vee-Validate in Storybook
-Storybook cannot use Vee-Validate by default.
-The following error will occur when using Vee-Validate in vue file.
+### StorybookのVee-Validate設定
+StorybookはデフォルトでVee-Validateを使用することができません。
+Vee-Validateを使用したvueファイルのstoryを表示した際に以下のエラーが表示されます。
 ```
 Error: No such validator 'XXXX' exists.
 ```
-To aboid this, add the follwing to .storybook/preview.ts.
+上記エラーを回避するために.storybook/preview.tsに以下を追加します。
 ```ts
 // .storybook/preview.ts
-import { localize } from '@vee-validate/i18n'
-import en from '@vee-validate/i18n/dist/locale/en.json'
+import { localize, setLocale } from '@vee-validate/i18n'
+import ja from '@vee-validate/i18n/dist/locale/ja.json'
 import { all } from '@vee-validate/rules'
 import { defineRule, configure } from 'vee-validate'
 
 configure({
-  generateMessage: localize({ en }),
+  generateMessage: localize({
+    // エラーメッセージの日本語化
+    ja,
+  }),
 })
 
+// すべてのルールをインポート
 Object.entries(all).forEach(([name, rule]) => {
-  // import all validation-rules
   defineRule(name, rule)
 })
+
+// エラーメッセージの日本語化
+setLocale('ja')
 ```
 
-### Mocking API Request in Storybook
-Use msw to mock Rest and GraphQL requests right inside your story in storybook. With msw-storybook-addon, you can easily mock your APIs, making that process much simpler.
+### StorybookのAPIモック設定
+StorybookでAPIをモック化するにはMSWを使用します。
+MSWはブラウザリクエストをService Workerがインターセプトして任意のレスポンスを返すことが出来るライブラリです。
+併せてライブラリのmsw-storybook-addonを使用することで、APIを簡単にモックすることができ、実装もシンプルにすることができます。
 ```bash
 npm install --save-dev msw msw-storybook-addon
+```
+以下のコマンドでService Workerを生成します。
+```bash
 npx msw init public/
 ```
-Enable MSW in Storybook by initializing MSW and providing the MSW decorator in ./storybook/preview.js
+./storybook/preview.tsでStorybookでMSWを有効にする設定を行います。
 ```ts
-// .storybook\preview.ts
+// .storybook/preview.ts
 import { initialize, mswLoader } from 'msw-storybook-addon'
 
-// Initialize MSW
+// MSWの有効化
 initialize()
 
 const preview: Preview = {
-  // Provide the MSW addon loader globally
+  // ローダーの設定
   loaders: [mswLoader],
 }
 
 export default preview
 ```
-Then ensure the staticDirs property in your Storybook configuration will include the generated service worker file (in /public, by default).
+.storybook/main.tsのstaticDirsに、生成されたService Worker（デフォルトでは/public）を指定します。
 ```ts
-// .storybook\main.ts
+// .storybook/main.ts
 const config: StorybookConfig = {
   staticDirs: ['../public'],
 }
 export default config
 ```
-Here is an example uses the fetch API to make network requests.
+以下は実装例になります。取得したAPIのレスポンスを画面に表示します。APIのレスポンスをモック化しています。
 ```ts
-// index.vue
+// pages/index.vue
 <script lang="ts" setup>
 import { useFetch } from '@vueuse/core'
 
@@ -1236,13 +1227,13 @@ const handleClick = async () => {
 
 <template>
   <div>
-    <input type="submit" value="Get uuid" @click="handleClick">
+    <button @click="handleClick">Get uuid</button>
     <p>UUID = {{ uuid }}</p>
   </div>
 </template>
 ```
 ```ts
-// index.stories.ts
+// pages/index.stories.ts
 import type { Meta, StoryObj } from '@storybook/vue3'
 import { http, HttpResponse } from 'msw'
 import Index from './index.vue'
@@ -1273,32 +1264,30 @@ export const Default: Story = {
 
 export default meta
 ```
-msw-storybook-addon starts MSW with default configuration. If you want to configure it, you can pass options to the initialize function. They are the StartOptions from setupWorker.
-A common example is to configure the onUnhandledRequest behavior, as MSW logs a warning in case there are requests which were not handled.
-If you want MSW to bypass unhandled requests and not do anything:
+デフォルトではモック化していないAPIはすべてコンソールにWarnで表示されます。
+ストーリーに直接関係のないAPIもWarnで表示されるため、コンソールに表示させたくない場合は以下の修正を行います。
 ```ts
-// preview.ts
+// .storybook/preview.ts
 import { initialize } from 'msw-storybook-addon';
 
 initialize({
+  // 以下を追加
   onUnhandledRequest: 'bypass'
 })
 ```
 
-### Run interaction testing inside Storybook
-Storybook's test addon allows you to test your components directly inside Storybook. It does this by using a Vitest plugin to transform your stories into Vitest tests using portable stories.
-
-Before installing, make sure your project meets the following requirements:
+### Storybookでインタラクションテストの実施
+Storybookのテストアドオンを利用するとStorybook内でコンポーネントを実行できます。
+Vitestプラグインを使用して、ストーリーをVitestのテストに変換することで実現しています。
+Storybookのテストアドオンをインストールする前に以下の要件を満たしていることを確認してください。
 - Storybook ≥ 8.4
-- A Storybook framework that uses Vite (e.g. vue3-vite), or the Storybook Next.js framework
 - Vitest ≥ 2.1
 
-Run the following command to install and configure the addon, which contains the plugin to run your stories as tests using Vitest:
 ```bash
 npx storybook add @storybook/experimental-addon-test
 ```
-That add command will install and register the test addon. It will also inspect your project's Vite and Vitest setup, and install and configure them with sensible defaults, if necessary.
-Make sure the following ts file have been created.
+上記のコマンドを実行するとvitest.workspace.tsファイルが作成されます。
+vitest.workspace.tsに以下を追加して保存します。
 ```ts
 // vitest.workspace.ts
 import path from 'path'
@@ -1315,7 +1304,7 @@ export default defineWorkspace([
     plugins: [
       storybookTest({ configDir: '.storybook' }),
       storybookVuePlugin(),
-      // Import nuxt-auto-imports functions
+      // 以下を追加（Nuxtが自動インポートする関数を利用できるようにする）
       AutoImportFunctions ({ imports: [
         'vue',
         'vee-validate',
@@ -1323,7 +1312,7 @@ export default defineWorkspace([
         'pinia',
       ], dts: '.storybook/auto-imports.d.ts',
       }),
-      // Import nuxt-auto-imports components
+      // 以下を追加（Nuxtが自動インポートするコンポーネントを利用できるようにする）
       AutoImportComponents({
         dirs: ['src/components'],
         dts: '.storybook/components.d.ts',
@@ -1331,6 +1320,7 @@ export default defineWorkspace([
     ],
     resolve: {
       alias: {
+      // エイリアスの設定（ここではソースディレクトリをsrcに変更している想定としています）
         '~': path.resolve(__dirname, './src'),
         '@': path.resolve(__dirname, './src'),
       },
@@ -1349,17 +1339,18 @@ export default defineWorkspace([
   },
 ])
 ```
-Add the follwing to scripts in package.json.
---project=storybook will run tests only stories.ts.
+package.jsonのscriptsに以下を追加します。
+--project=storybookを付与することでstories.tsのみテスト対象にすることができます。
 ```json
   "scripts": {
     "test:storybook": "vitest --project=storybook",
   },
 ```
 
-Here is an example.
+以下は実装例になります。
+画面に表示されているGet uuidボタンをクリックし、表示されたUUIDを検証しています。
 ```ts
-// index.vue
+// pages/index.vue
 <script lang="ts" setup>
 import { useFetch } from '@vueuse/core'
 
@@ -1378,10 +1369,10 @@ const handleClick = async () => {
 </template>
 ```
 ```ts
-// index.stories.ts
+// pages/index.stories.ts
 import type { Meta, StoryObj } from '@storybook/vue3'
 import { http, HttpResponse } from 'msw'
-import { within, userEvent } from '@storybook/test'
+import { within, userEvent, expect } from '@storybook/test'
 import Index from './index.vue'
 
 type Story = StoryObj<typeof Index>
@@ -1407,6 +1398,7 @@ export const GetUuid: Story = {
       ],
     },
   },
+  // インタラクションテストの実装
   play: async ({ canvasElement }) => {
     // Arrange
     const canvas = within(canvasElement)
@@ -1415,11 +1407,11 @@ export const GetUuid: Story = {
     await userEvent.click(await canvas.findByText('Get uuid'))
 
     // Assert
-    await expect(canvas.getByText('UUID = test uuid')).toBeInTheDocument()
+    await expect(await canvas.findByText('UUID = test uuid')).toBeInTheDocument()
   },
 }
 ```
-Run the following command to run tests.
+以下のコマンドを実行してインタラクションテストを実施します。
 ```bash
 npm run test:storybook
 ```
