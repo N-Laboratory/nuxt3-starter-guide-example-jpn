@@ -469,7 +469,7 @@ package.jsonのscriptsを以下のように修正 (--coverageを追加) しま�
 ```
 
 pagesディレクトリに以下のindex.vueファイルを追加します。
-```vue
+```ts
 // pages/index.vue
 <template>
   <h1>
@@ -1416,13 +1416,24 @@ export const GetUuid: Story = {
 npm run test:storybook
 ```
 
-## E2E Testing By [Puppeteer](https://github.com/puppeteer/puppeteer)
-Most things that you can do manually in the browser can be done using Puppeteer as E2E testing.
+## [Puppeteer](https://github.com/puppeteer/puppeteer)を利用したE2Eテストの実装
+Puppeteerを利用してE2Eテストの実装を行います。
+PuppeteerはヘッドレスChromeの操作に特化したNode.js製のライブラリです。
+Puppeteerを使うことでテストの自動化を実装することができます。
 ```bash
-# install Puppeteer
 npm install --save-dev puppeteer
 ```
-```vue
+
+package.jsonのscriptsに以下を追加します。
+```json
+  "scripts": {
+    "test:e2e": "vitest ./src/tests/e2eTest/",
+  },
+```
+
+以下は実装例になります。メールアドレスとパスワードの入力フォームを作成しています。メールアドレスとパスワードを入力すると送信ボタンが活性化します。このE2Eテストでは入力後に送信ボタンが活性化しているかどうかを検証しています。
+```ts
+// pages/foo.vue
 <script lang="ts" setup>
 import { Form, Field } from 'vee-validate'
 </script>
@@ -1450,14 +1461,15 @@ import { Form, Field } from 'vee-validate'
   </Form>
 </template>
 ```
-Here is a sample E2E testing code.
-It tests submit button state.
-```ts
-import { afterAll, beforeAll, describe, expect, test } from 'vitest'
-import { launch, PuppeteerLaunchOptions } from 'puppeteer'
-import type { Browser, Page } from 'puppeteer'
 
-// Set browser launch option. See the following for more details.
+```ts
+// ./src/tests/e2eTest/foo.spec.ts
+import { afterAll, beforeAll, describe, expect, test } from 'vitest'
+import { launch } from 'puppeteer'
+// PuppeteerLaunchOptionsをインポートできない場合は、PuppeteerLaunchOptionsの代わりにLaunchOptionsを使用してください。
+import type { Browser, Page, PuppeteerLaunchOptions } from 'puppeteer'
+
+// ブラウザの起動設定。詳細は以下を参照してください。
 // https://pptr.dev/api/puppeteer.browserlaunchargumentoptions
 const options: PuppeteerLaunchOptions = {
   headless: false,
@@ -1486,28 +1498,30 @@ describe('E2E', () => {
    test('1-If you input a valid value, submit button should enable', async () => {
       try {
         // Arrange
+        // ページ繊維
         await page.goto('http://localhost:3000/foo')
 
         // Act
-        // Input email
+        // メールアドレスの入力
         await page.type('input[name="email"]', 'foo@bar.com')
 
-        // Input password
+        // パスワードの入力
         await page.type('input[name="password"]', 'foo')
 
-        // Get submit button state. inactive → true, active → false
+        // 送信ボタンの活性有無を取得。非活性 → true, 活性 → false
         const isDisabled = await page.$eval(
           '[data-testid="submit-btn"]',
           element => (element as HTMLButtonElement).disabled
         )
 
-        // Take a screenshot
+        // スクリーンショットの保存
         await page.screenshot({
-          path: './src/tests/e2eTest/evidence/pages/foo/test-01.png',
+          path: './src/tests/e2eTest/e2e-test.png',
           fullPage: true
         })
 
         // Assert
+        // 送信ボタンが活性であるかを検証
         expect(isDisabled).toBe(false)
       } catch (e) {
         console.error(e)
@@ -1516,19 +1530,13 @@ describe('E2E', () => {
     }, 60000)
 })
 ```
-To run E2E testing, add the test file path to config:path in package.json.
-```json
-{
-  "config": {
-    "path": "./src/tests/e2eTest/spec/foo.spec.ts"
-  },
-}
-```
+以下のコマンドを実行してNuxtを起動します。
 ```bash
-# run application server
 npm run dev
+```
 
-# run E2E testing
+以下のコマンドを実行してE2Eテストを実行します。
+```bash
 npm run test:e2e
 ```
 
