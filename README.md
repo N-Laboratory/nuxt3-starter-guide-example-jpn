@@ -19,21 +19,20 @@
     <img src="https://img.shields.io/badge/-FollowMyAccount-grey.svg?logo=github&style=flat">
   </a>
 </p>
-Nuxt3のテンプレートプロジェクト。
+Nuxt3の学習用のテンプレートプロジェクト。
 
-最低限必要な機能を実装し、要点を解説しています。 ユニットテスト、E2Eテスト、SonarQubeも取り扱っています。
+最低限必要な機能を実装し、要点を解説しています。 ユニットテスト、E2Eテスト、SonarQubeによるコード解析も取り扱っています。
 
 このプロジェクトでは以下の機能を実装しています。
-* Vitest (unit test)
+* TypeScript
 * EsLint (Flat Config and Stylistic)
-* Migrate to Flat Config and Stylistic
 * VeeValidate
 * Navigation guard
 * Pinia
 * Storybook
+* Vitest (unit test)
 * Puppeteer (E2E test)
 * SonarQube
-* TypeScript
 
 ## Contents
 
@@ -45,13 +44,13 @@ Nuxt3のテンプレートプロジェクト。
 1. [Vitestの設定](#vitestの設定)
 1. [VeeValidateの設定](#veevalidateの設定)
 1. [VeeValidateのテスト実装](#veevalidateのテスト実装)
-1. [Navigation guard](#navigation-guard)
+1. [ナビゲーションガード](#ナビゲーションガード)
 1. [Piniaの設定](#piniaの設定)
 1. [Piniaのテスト実装](#piniaのテスト実装)
 1. [データフェッチ](#データフェッチ)
 1. [Storybookの設定](#storybookの設定)
-1. [E2E Testing By Puppeteer](#e2e-testing-by-puppeteer)
-1. [Analyzing source code by SonarQube](#analyzing-source-code-by-sonarqube)
+1. [Puppeteerを利用したE2Eテストの実装](#puppeteerを利用したe2eテストの実装)
+1. [SonarQubeを利用した静的解析](#sonarqubeを利用した静的解析)
 
 ## [プロジェクトの作成](https://nuxt.com/docs/getting-started/installation#new-project)
 Nuxt3のプロジェクトを新規作成するには以下のコマンドを実行します。
@@ -1342,9 +1341,9 @@ export default defineWorkspace([
 package.jsonのscriptsに以下を追加します。
 --project=storybookを付与することでstories.tsのみテスト対象にすることができます。
 ```json
-  "scripts": {
-    "test:storybook": "vitest --project=storybook",
-  },
+"scripts": {
+  "test:storybook": "vitest --project=storybook",
+},
 ```
 
 以下は実装例になります。
@@ -1426,9 +1425,9 @@ npm install --save-dev puppeteer
 
 package.jsonのscriptsに以下を追加します。
 ```json
-  "scripts": {
-    "test:e2e": "vitest ./src/tests/e2eTest/",
-  },
+"scripts": {
+  "test:e2e": "vitest ./src/tests/e2eTest/",
+},
 ```
 
 以下は実装例になります。メールアドレスとパスワードの入力フォームを作成しています。メールアドレスとパスワードを入力すると送信ボタンが活性化します。このE2Eテストでは入力後に送信ボタンが活性化しているかどうかを検証しています。
@@ -1498,7 +1497,7 @@ describe('E2E', () => {
    test('1-If you input a valid value, submit button should enable', async () => {
       try {
         // Arrange
-        // ページ繊維
+        // ページ遷移
         await page.goto('http://localhost:3000/foo')
 
         // Act
@@ -1540,35 +1539,34 @@ npm run dev
 npm run test:e2e
 ```
 
-## Analyzing source code by [SonarQube](https://docs.sonarqube.org/latest/)
-SonarQube is a self-managed, automatic code review tool that systematically helps you deliver clean code.
+## [SonarQube](https://docs.sonarqube.org/latest/)を利用した静的解析
+SonarQubeは、ソフトウェア開発におけるコード品質の向上を目的とした静的コード解析ツールです。ここでは作成したNuxtプロジェクトをSonarQubeを利用して静的コード解析を実行します。
 ```bash
-# install SonarQube tools
 npm install --save-dev sonarqube-scanner vitest-sonar-reporter
 ```
 
-Add the following to vitest.config.ts.
-* add lcov to reporter
-* add reporters and outputFile to test
+vitest.config.tsに以下を追加します。
+* reporterにlcovを追加
+* reportersを追加
 ```ts
 // vitest.config.ts
 export default defineConfig({
   test: {
     coverage: {
-      // To collect coverage by SonarQube, add lcov.
+      // lcovを追加。SonarQubeのカバレッジ収集に使用します。
       reporter: ['html', 'clover', 'text', 'lcov']
     },
-    // To analyze your test code by SonarQube, output test report file
+    // 以下を追加。SonarQubeのテストコード解析に使用します。
     reporters: ['verbose', 'vitest-sonar-reporter'],
     outputFile: 'test-report.xml',
   }
 })
 ```
-
-Create sonar-project.properties in root directory and add the following to sonar-project.properties. See [this](https://docs.sonarqube.org/9.6/project-administration/narrowing-the-focus/) for more details.
+ルートディレクトリにsonar-project.propertiesを作成して以下の内容で保存します。
+指定できるプロパティの詳細は[こちら](https://docs.sonarqube.org/9.6/project-administration/narrowing-the-focus/)を参照ください。
 ```properties
-sonar.projectKey=nuxt3-starter-guide
-sonar.projectName=nuxt3-starter-guide
+sonar.projectKey=sample
+sonar.projectName=sample
 sonar.sources=src
 sonar.tests=src/tests/
 sonar.test.inclusions=src/tests/**/*.spec.ts
@@ -1582,32 +1580,32 @@ sonar.host.url=http://localhost:9000
 sonar.token=sqp_XXXXXXXXXXXXXXXXXXXXXX
 ```
 
-### Create a SonarQube project
-Make sure you have installed SonarQube (v10.7) on your development machine.
-Run SonarQube server as localhost:9000 before do the following.
+### SonarQubeプロジェクトの作成
+事前にローカルにSonarQube (v10.7)がインストールされていることを確認してください。v10.7以外のバージョンでは以降の手順と異なる場合があります。
 
-To create a SonarQube project, do the following.
-1. Access the following url.
+SonarQubeをlocalhost:9000で起動した状態で以降の手順を実施します。
+
+1. 次のurlにアクセスします。
 http://localhost:9000/projects/create
 
-1. Click [Create a local project]
+1. Create a local projectをクリックします。
 
-1. Input __nuxt3-starter-guide__ in Project display name and Project key. Click [Next]
+1. Project display nameとProject keyにsampleと入力します。Nextをクリックします。
 
-1. Select [Use the global setting] and click [Create project]
+1. Use the global settingを選択してCreate projectをクリックします。
 
-1. Click [Locally]
+1. Locallyをクリックします。
 
-1. Click [Generate] and then generate project token
+1. Generateをクリックします。トークンが画面に表示されるのでコピーします。
 
-### Analyze your source code
-Add project token to sonar.token in sonar-project.properties.
-See [this](https://docs.sonarqube.org/latest/user-guide/user-account/generating-and-using-tokens/) for more details of token.
+### ソースコードの解析
+コピーしたトークンをsonar-project.propertiesのsonar.tokenに貼り付けます。
+トークンに関しての詳細は[こちら](https://docs.sonarqube.org/latest/user-guide/user-account/generating-and-using-tokens/)を参照ください。
 ```properties
 sonar.token=sqp_XXXXXXXXXXXXXXXXXXXXXX
 ```
 
-Add the following to scripts in package.json.
+package.jsonのscriptsに以下を追加します。
 ```json
 {
   "scripts": {
@@ -1615,16 +1613,11 @@ Add the following to scripts in package.json.
   },
 }
 ```
-
-Run below command to run SonarQube analysis.
+以下のコマンドでSonarQubeによる解析を実行します。
 ```bash
-# run all tests
-npm run test:all
-
-# run SonarQube analysis
 npm run sonar
 ```
 
-You can access the following url to show result.
+解析完了後は以下のURLで解析結果を確認することができます。
 
 http://localhost:9000/dashboard?id=nuxt3-starter-guide
