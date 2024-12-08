@@ -1,6 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-
   modules: [
     '@nuxt/eslint',
     ['@pinia/nuxt',
@@ -13,6 +12,9 @@ export default defineNuxtConfig({
         // disableVuex: false ,
       },
     ],
+  ],
+  components: [
+    { path: '~/components/', pathPrefix: false },
   ],
   srcDir: 'src/',
   compatibilityDate: '2024-12-01',
