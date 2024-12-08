@@ -8,23 +8,23 @@ const store = useUserStore()
 const { handleSubmit, errors, isSubmitting, meta } = useForm({
   validationSchema: {
     email: 'required|email',
-    password: 'required'
-  }
+    password: 'required',
+  },
 })
 
-const { value: password } = useField('password')
-const { value: email } = useField('email')
+const { value: password } = useField<string>('password')
+const { value: email } = useField<string>('email')
 
-const submit = handleSubmit(() => {
-  store.setUserInfo(email.value as string, password.value as string)
-  router.push('/myPage')
+const submit = handleSubmit(async () => {
+  store.setUserInfo(email.value, password.value)
+  await router.push('/myPage')
 })
 </script>
 
 <template>
   <div class="login-page">
     <div class="form">
-      <h1 data-testid="page-title">
+      <h1>
         Login
       </h1>
       <div class="login-form">
@@ -35,9 +35,12 @@ const submit = handleSubmit(() => {
             type="text"
             name="email"
             placeholder="email"
-            data-testid="input-email"
           >
-          <span v-if="errors.email" class="message invalid" data-testid="email-error-msg">{{ errors.email }}</span>
+          <span
+            v-if="errors.email"
+            data-testid="email-error-msg"
+            class="message invalid"
+          >{{ errors.email }}</span>
         </div>
         <div class="field">
           <input
@@ -46,9 +49,12 @@ const submit = handleSubmit(() => {
             type="text"
             name="password"
             placeholder="password"
-            data-testid="input-password"
           >
-          <span v-if="errors.password" class="message invalid" data-testid="password-error-msg">{{ errors.password }}</span>
+          <span
+            v-if="errors.password"
+            data-testid="password-error-msg"
+            class="message invalid"
+          >{{ errors.password }}</span>
         </div>
         <div class="field">
           <!-- フォームの送信処理が実行中の場合は, isSubmittingはtrueを返す -->
@@ -56,9 +62,9 @@ const submit = handleSubmit(() => {
           <!-- 詳細に関してはこちらを参照ください https://vee-validate.logaretm.com/v4/api/use-form/#api-reference -->
           <button
             :disabled="isSubmitting || !meta.valid"
-            :class="{ 'btn-disabled' : isSubmitting || !meta.valid}"
-            class="form-submit"
+            :class="{ 'btn-disabled': isSubmitting || !meta.valid }"
             data-testid="submit-btn"
+            class="form-submit"
             @click="submit"
           >
             Submit
@@ -90,10 +96,12 @@ const submit = handleSubmit(() => {
   padding: 15px;
   width: 100%;
 }
+
 .form .form-submit.btn-disabled {
   background: #858585;
   cursor: not-allowed;
 }
+
 .form .form-submit {
   background: #000000;
   border: 0;
@@ -104,6 +112,7 @@ const submit = handleSubmit(() => {
   padding: 15px;
   width: 100%;
 }
+
 .form button:hover,.form button:active,.form button:focus {
   background: #2a2a2a;
 }
