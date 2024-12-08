@@ -15,7 +15,6 @@ export default defineConfig({
       'vue-router',
       'pinia',
     ], dts: 'auto-imports.d.ts' }),
-    // ソースディレクトリをsrcに変更している想定としています。
     AutoImportComponents({
       dirs: ['src/components'],
       dts: '.nuxt/components.d.ts',

@@ -1,18 +1,15 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: [
-    '@nuxt/eslint',
-    ['@pinia/nuxt',
-      {
-        autoImports: [
-          // defineStoreの自動インポート
-          'defineStore',
-        ],
-        // vuexも併用する場合は以下を追加
-        // disableVuex: false ,
-      },
-    ],
-  ],
+  modules: ['@nuxtjs/storybook', '@nuxt/eslint', ['@pinia/nuxt',
+    {
+      autoImports: [
+        // defineStoreの自動インポート
+        'defineStore',
+      ],
+      // vuexも併用する場合は以下を追加
+      // disableVuex: false ,
+    },
+  ], '@nuxtjs/storybook'],
   components: [
     { path: '~/components/', pathPrefix: false },
   ],
@@ -30,5 +27,9 @@ export default defineNuxtConfig({
         semi: false,
       },
     },
+  },
+  storybook: {
+    host: 'http://localhost',
+    port: 6006,
   },
 })

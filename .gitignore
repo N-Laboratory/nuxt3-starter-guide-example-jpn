@@ -9,3 +9,4 @@ dist
 coverage
 # sonarqube
 .scannerwork
+*storybook.log
