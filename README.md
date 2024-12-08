@@ -37,7 +37,7 @@ Nuxt3の学習用のテンプレートプロジェクト。
 ## Contents
 
 1. [プロジェクトの作成](#プロジェクトの作成)
-1. [Typescript Setup](#typescriptの設定)
+1. [Typescriptの設定](#typescriptの設定)
 1. [EsLint Flat Configの設定](#eslint-flat-configの設定)
 1. [ESLint Stylisticの設定](#eslint-stylisticの設定)
 1. [Flat ConfigとStylisticへの移行](#flat-configとstylisticへの移行)
@@ -79,7 +79,7 @@ npm run dev
 
 http://localhost:3000
 
-## [Typescriptの設定](https://nuxt.com/docs/guide/concepts/typescript)
+## [Typescript](https://nuxt.com/docs/guide/concepts/typescript)の設定
 ```bash
 npm install --save-dev vue-tsc typescript
 ```
@@ -97,7 +97,7 @@ export default defineNuxtConfig({
 });
 ```
 
-## [EsLint Flat Configの設定](https://eslint.nuxt.com/packages/module)
+## [EsLint Flat Config](https://eslint.nuxt.com/packages/module)の設定
 以下のコマンドでESLintとNuxt ESLintをインストールします。Nuxt ESLint はAll-in-one ESLint integration for Nuxtと公式が記載しているとおり、NuxtにESLintを導入するためのオールインワンモジュールです。
 
 ```bash
@@ -124,8 +124,8 @@ import withNuxt from './.nuxt/eslint.config.mjs'
 export default withNuxt(
   {
     // lintの適用ファイルの指定.
-    files: ['**/*.ts', '**/*.tsx'],
-    // lintの適用対象外のファイルの指定。従来の--ignore-pathをここでは指定します。
+    files: ['**/*.ts'],
+    // lintの適用対象外のファイルの指定。従来の--ignore-pathで指定していたファイル等をここでは指定します。
     ignores: ["**/*.config.ts"],
     // lintのルールの設定
     rules: {
@@ -141,6 +141,8 @@ export default withNuxt(
   }
 )
 ```
+
+lintのルールが適用されない場合はVSCodeを再起動してください。
 
 lintの適用対象外のファイルには以下がデフォルトで設定されています。
 
@@ -190,7 +192,7 @@ VSCodeの拡張機能のESLintのバージョンが3.0.10以前の場合は.vsco
 }
 ```
 
-## [ESLint Stylisticの設定](https://eslint.nuxt.com/packages/module#eslint-stylistic)
+## [ESLint Stylistic](https://eslint.nuxt.com/packages/module#eslint-stylistic)の設定
 以下のコマンドでeslintをインストールします。すでにインストール済みの場合は不要です。
 ```bash
 npm install --save-dev @nuxt/eslint eslint
@@ -227,6 +229,7 @@ export default defineNuxtConfig({
   }
 })
 ```
+stylisticの設定が適用されない場合はVSCodeを再起動してください。
 
 ### VSCodeで保存時に自動でフォーマットを行う設定
 .vscode/setting.jsonに以下を追加します。
@@ -344,11 +347,11 @@ export default defineNuxtConfig({
 })
 ```
 package.jsonのscriptsにprettierの実行コマンドがある場合は削除しておきます。
+Flat Configやstylisticの設定が適用されない場合はVSCodeを再起動してください。
 
-## [Vitestの設定](https://vitest.dev/)
+## [Vitest](https://vitest.dev/)の設定
 
 ```bash
-# install Vitest
 npm install --save-dev vitest @testing-library/user-event @testing-library/vue happy-dom
 ```
 
@@ -360,16 +363,18 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   resolve: {
+    // エイリアスの設定
     alias: {
       '~': path.resolve(__dirname, './src'),
-      '@': path.resolve(__dirname, './src')
-    }
+      '@': path.resolve(__dirname, './src'),
+    },
   },
   test: {
     globals: true,
-    environment: 'happy-dom'
-  }
+    environment: 'happy-dom',
+  },
 })
+
 ```
 
 package.jsonに以下を追加します。
@@ -389,8 +394,7 @@ package.jsonに以下を追加します。
 ### Nuxt自動インポート設定
 Nuxtが自動インポートする関数やコンポーネントを以下のライブラリを使用することでユニットテスト内でも自動インポートを行うことができます。
 ```bash
-npm install --save-dev unplugin-auto-import
-npm install --save-dev unplugin-vue-components
+npm install --save-dev unplugin-auto-import unplugin-vue-components
 ```
 vitest.config.tsに以下のpluginsを追加します。
 ```ts
@@ -400,9 +404,10 @@ import AutoImportComponents from 'unplugin-vue-components/vite'
 import Vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
+  // 以下を追加
   plugins: [
     Vue(),
-    // インポートしたいプラグインを指定. 指定できるプリセットは以下を参照ください。
+    // インポートしたいプラグインを指定します。 指定できるプリセットは以下を参照ください。
     // https://github.com/antfu/unplugin-auto-import/tree/main/src/presets
     AutoImportFunctions ({ imports: [
       'vue',
@@ -410,6 +415,7 @@ export default defineConfig({
       'vue-router',
       'pinia',
     ], dts: 'auto-imports.d.ts' }),
+    // ソースディレクトリをsrcに変更している想定としています。
     AutoImportComponents({
       dirs: ['src/components'],
       dts: '.nuxt/components.d.ts',
@@ -417,7 +423,7 @@ export default defineConfig({
   ],
 })
 ```
-プリセットを使用せずに直接インポートしたいプラグインを指定するには以下のように記載します。
+プリセットを使用せずに直接インポートしたいプラグインを指定するには以下のように記述します。
 ```ts
 // vitest.config.ts
 AutoImportFunctions({
@@ -443,15 +449,15 @@ export default defineConfig({
   test: {
     coverage: {
       provider: 'v8',
-      // src配下の特定の拡張子のファイルのみをテスト対象に設定
+      // src配下の特定の拡張子のファイルのみをテスト対象に設定。
       include: ['src/**/*.{vue,js,ts}'],
-      // 未テストのコードもカバレッジの対象にする
+      // 未テストのコードもカバレッジの対象にする。
       all: true,
       reporter: ['html', 'clover', 'text']
     },
     root: '.',
     reporters: ['verbose', 'vitest-sonar-reporter'],
-    // SonarQubeでテスト結果を解析するためのレポートを出力する
+    // SonarQubeでテスト結果を解析するためのレポートを出力。
     outputFile: 'test-report.xml'
   }
 });
@@ -469,7 +475,7 @@ package.jsonのscriptsを以下のように修正 (--coverageを追加) しま�
 
 pagesディレクトリに以下のindex.vueファイルを追加します。
 ```ts
-// pages/index.vue
+// src/pages/index.vue
 <template>
   <h1>
     Pages/index.vue
@@ -477,9 +483,9 @@ pagesディレクトリに以下のindex.vueファイルを追加します。
 </template>
 ```
 
-ユニットテストの実装の一例としてindex.test.tsを新規作成して以下の内容で保存します。
+ユニットテストの実装の一例としてindex.spec.tsを新規作成して以下の内容で保存します。
 ```ts
-// index.test.ts
+// src/tests/unitTest/pages/index.spec.ts
 import { describe, expect, test } from 'vitest'
 import { render, screen } from '@testing-library/vue'
 import Index from '~/pages/index.vue'
@@ -518,13 +524,13 @@ npm run test:linux
 npm run test:win
 ```
 
-## [VeeValidateの設定](https://vee-validate.logaretm.com/v4/)
+## [VeeValidate](https://vee-validate.logaretm.com/v4/)の設定
 ```bash
 npm install --save-dev vee-validate @vee-validate/i18n @vee-validate/rules
 ```
 pluginsフォルダにvee-validate-plugin.tsを新規作成して以下の内容で保存します。
 ```ts
-// plugins/vee-validate-plugin.ts
+// src/plugins/vee-validate-plugin.ts
 import { localize, setLocale } from '@vee-validate/i18n'
 import ja from '@vee-validate/i18n/dist/locale/ja.json'
 import { all } from '@vee-validate/rules'
@@ -629,7 +635,7 @@ const foo = (values: Record<string, string>) => {
 </template>
 ```
 
-## [VeeValidateのテスト実装](https://vee-validate.logaretm.com/v4/guide/testing)
+## VeeValidateの[テスト実装](https://vee-validate.logaretm.com/v4/guide/testing)
 前項目で作成したvee-validate-plugin.tsはvee-validateの設定ファイルですが、 Nuxtが起動時に読み込まれます。vitest実行時はNuxtが起動しないので、vee-validateを利用しているvueファイルのテストを実行するとvitest上でエラーが発生します。
 
 vitest.config.tsのsetupFilesにvee-validateの設定ファイルを指定することにより、vitest実行時にそのファイルの中身が実行されて上記事象を回避することができます。
@@ -644,7 +650,7 @@ export default defineConfig({
 ```
 src/tests/unitTest配下にsetup.tsを新規作成して以下の内容で保存します。
 ```ts
-// .src/tests/unitTest/setup.ts
+// src/tests/unitTest/setup.ts
 import { localize, setLocale } from '@vee-validate/i18n'
 import ja from '@vee-validate/i18n/dist/locale/ja.json'
 import { all } from '@vee-validate/rules'
@@ -674,7 +680,7 @@ vee-validateのテストに関して詳細な情報は以下を参照くださ�
 * https://github.com/testing-library/vue-testing-library/blob/main/src/__tests__/validate-plugin.js
 
 ```ts
-// form.vue
+// src/pages/form.vue
 <script lang="ts" setup>
 import { Form, Field, ErrorMessage } from 'vee-validate'
 
@@ -693,18 +699,19 @@ const foo = (values: Record<string, string>) => {
 ```
 
 ```ts
-// form.spec.ts
+// src/tests/unitTest/pages/form.spec.ts
 import { expect, test } from 'vitest'
 import { render, screen } from '@testing-library/vue'
 import userEvent from '@testing-library/user-event'
 import Form from '~/pages/form.vue'
 
-test('should error message display', async () => {
+test('不正なemailを入力した場合にバリデーションエラーメッセージが表示されること', async () => {
   // Arrange
   const user = userEvent.setup()
   render(Form)
 
   // Act
+  // email入力欄にabcを入力。
   await user.type(screen.getByPlaceholderText('email'), 'abc{Tab}')
 
   // Assert
@@ -715,37 +722,37 @@ test('should error message display', async () => {
 ## [ナビゲーションガード](https://nuxt.com/docs/guide/directory-structure/middleware)
 特定のページへアクセスがあった場合に、指定したページへリダイレクトさせるにはmiddlewareディレクトリにリダイレクト処理を記述したファイルを作成します。 ファイルの名前は以下のように設定することで異なる機能を持ちます。
 
-* xxx.ts (リダイレクト処理を有効にするには、有効にしたいvueファイルに以下を追加する)
+* src/middleware/xxx.ts (リダイレクト処理を有効にするには、有効にしたいvueファイルに以下を追加する)
 ```ts
-// foo.vue
+// src/pages/foo.vue
 <script setup>
 definePageMeta({
   middleware: ["xxx"]
 })
 </script>
 ```
-* xxx.global.ts (全ページでリダイレクト処理が有効になる)
+* src/middleware/xxx.global.ts (全ページでリダイレクト処理が有効になる)
 
-以下は一例として、「/」にアクセスがあった場合にログインページへリダイレクトする処理を実装しています。 詳細な実装方法は[こちら](https://nuxt.com/docs/guide/directory-structure/middleware)を参照ください。
+以下は一例として、src/pages/foo.vueにアクセスがあった場合にログインページへリダイレクトする処理を実装しています。 詳細な実装方法は[こちら](https://nuxt.com/docs/guide/directory-structure/middleware)を参照ください。
 
 
 ```ts
-// middleware/redirect.global.ts
+// src/middleware/redirect.global.ts
 export default defineNuxtRouteMiddleware((to, from) => {
-  // 「/」にアクセスがあった場合
-  if (to.path === '/') {
-    // login.vueへリダイレクト
+  // src/pages/foo.vueにアクセスがあった場合
+  if (to.path === '/foo') {
+    // ログインページへリダイレクト
     return navigateTo('login')
   }
 })
 ```
-テストの実装に関しては[こちら](https://github.com/N-Laboratory/nuxt3-starter-guide-example-jpn/blob/main/src/tests/unitTest/middleware/redirect.global.spec.ts)を参照ください。
+ユニットテストの実装に関しては[こちら](https://github.com/N-Laboratory/nuxt3-starter-guide-example-jpn/blob/main/src/tests/unitTest/middleware/redirect.global.spec.ts)を参照ください。
 
-## [Piniaの設定](https://pinia.vuejs.org/ssr/nuxt.html)
+## [Pinia](https://pinia.vuejs.org/ssr/nuxt.html)の設定
 ```bash
 npm install pinia @pinia/nuxt
 ```
-piniaのgithubのissueで[こちら](https://github.com/vuejs/pinia/issues/853)で言及されているとおり、 piniaをインストールする際にnpmエラーが発生します。
+piniaのgithubのissueで[こちら](https://github.com/vuejs/pinia/issues/853)で言及されているとおり、 piniaをインストールする際にnpmエラーが発生する場合があります。
 
 エラーを回避するため公式ガイドの[こちら](https://pinia.vuejs.org/ssr/nuxt.html#Installation)で紹介されている方法を実施します。 package.jsonのoverridesに以下を追加します。
 ```json
@@ -789,7 +796,7 @@ export default defineNuxtConfig({
 ### Storeの実装
 store配下にuser.tsを新規作成して以下の内容で保存します。
 ```ts
-// store/user.ts
+// src/store/user.ts
 // nuxt.config.tsのautoImportsでdefineStoreを指定している場合は以下のインポート分は不要です。
 import { defineStore } from 'pinia'
 
@@ -807,7 +814,7 @@ export const useUserStore = defineStore('user', {
 ```
 storeをvueファイルで使用するサンプルコードは以下の通りです。
 ```ts
-// pages/store.vue
+// src/pages/store.vue
 <script lang="ts" setup>
 import { useUserStore } from '~/store/user'
 
@@ -825,7 +832,7 @@ store.setUserInfo("new email", "new password")
 </script>
 ```
 
-## [Piniaのテスト実装](https://pinia.vuejs.org/cookbook/testing.html)
+## Piniaの[テスト実装](https://pinia.vuejs.org/cookbook/testing.html)
 ```bash
 npm install --save-dev @pinia/testing
 ```
@@ -877,7 +884,7 @@ describe('Store', () => {
 storeの初期値を設定することもできます。
 詳細は[こちら](https://pinia.vuejs.org/cookbook/testing.html#initial-state)を参照してください。
 ```ts
-// pages/index.vue
+// src/pages/index.vue
 <script lang="ts" setup>
 import { useUserStore } from '~/store/user'
 
@@ -904,7 +911,7 @@ beforeEach(() => {
   setActivePinia(createPinia())
 })
 
-test('store user info should set the initial value', () => {
+test('storeの初期値を上書きできること', () => {
   // Arrange
   render(Foo, {
     global: {
@@ -937,7 +944,7 @@ const { data: bar } = await useFetch('/api/v1/foo')
 </template>
 ```
 
-## [Storybookの設定](https://storybook.js.org/docs)
+## [Storybook](https://storybook.js.org/docs)の設定
 ```bash
 npx storybook@latest init --type vue3 --builder vite
 ```
@@ -966,7 +973,7 @@ export default defineConfig({
 ```
 以下のvueファイルとstoryを新規作成します。
 ```typescript
-// pages/index.vue
+// src/pages/index.vue
 <template>
   <div>
     Pages/index.vue
@@ -974,7 +981,7 @@ export default defineConfig({
 </template>
 ```
 ```typescript
-// pages/index.stories.ts
+// src/pages/index.stories.ts
 import type { Meta, StoryObj } from '@storybook/vue3'
 import Index from './index.vue'
 
@@ -1018,7 +1025,7 @@ export default defineNuxtConfig({
 npm run dev
 ```
 
-nuxt.config.tsでstorybookの設定を粉うことができます。指定できるプロパティは[こちら](https://storybook.nuxtjs.org/getting-started/options)を参照してください。
+nuxt.config.tsでstorybookの設定を行うことができます。指定できるプロパティは[こちら](https://storybook.nuxtjs.org/getting-started/options)を参照してください。
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
@@ -1042,6 +1049,7 @@ import Foo from '~/components/Foo.vue'
 
 ※以下はソースディレクトリをsrcに変更している想定としています。
 ```ts
+// .storybook/main.ts
 import type { StorybookConfig } from "@storybook/vue3-vite";
 import path from "path";
 
@@ -1066,12 +1074,13 @@ StorybookはNuxtが自動インポートする関数やコンポーネントを�
 - unplugin-auto-import
 - unplugin-vue-components
 ```bash
-npm install --save-dev unplugin-auto-import
-npm install --save-dev unplugin-vue-components
+npm install --save-dev unplugin-auto-import unplugin-vue-components
 ```
 .storybook/main.tsのviteFinalに以下を追加します。
 ```ts
+// .storybook/main.ts
 import AutoImportFunctions from "unplugin-auto-import/vite";
+import AutoImportComponents from 'unplugin-vue-components/vite'
 
 const config: StorybookConfig = {
   viteFinal: async (config) => {
@@ -1140,7 +1149,7 @@ export const Default: Story = {
       store.user.password = 'foobar'
     },
     components: { Index },
-    template: '<Indesx />',
+    template: '<Index />',
   }),
 }
 
@@ -1213,7 +1222,7 @@ export default config
 ```
 以下は実装例になります。取得したAPIのレスポンスを画面に表示します。APIのレスポンスをモック化しています。
 ```ts
-// pages/index.vue
+// src/pages/index.vue
 <script lang="ts" setup>
 import { useFetch } from '@vueuse/core'
 
@@ -1232,7 +1241,7 @@ const handleClick = async () => {
 </template>
 ```
 ```ts
-// pages/index.stories.ts
+// src/pages/index.stories.ts
 import type { Meta, StoryObj } from '@storybook/vue3'
 import { http, HttpResponse } from 'msw'
 import Index from './index.vue'
@@ -1276,7 +1285,7 @@ initialize({
 ```
 
 ### Storybookでインタラクションテストの実施
-Storybookのテストアドオンを利用するとStorybook内でコンポーネントを実行できます。
+Storybookのテストアドオンを利用するとStorybook内でコンポーネントテストを実行できます。
 Vitestプラグインを使用して、ストーリーをVitestのテストに変換することで実現しています。
 Storybookのテストアドオンをインストールする前に以下の要件を満たしていることを確認してください。
 - Storybook ≥ 8.4
@@ -1349,7 +1358,7 @@ package.jsonのscriptsに以下を追加します。
 以下は実装例になります。
 画面に表示されているGet uuidボタンをクリックし、表示されたUUIDを検証しています。
 ```ts
-// pages/index.vue
+// src/pages/index.vue
 <script lang="ts" setup>
 import { useFetch } from '@vueuse/core'
 
@@ -1368,7 +1377,7 @@ const handleClick = async () => {
 </template>
 ```
 ```ts
-// pages/index.stories.ts
+// src/pages/index.stories.ts
 import type { Meta, StoryObj } from '@storybook/vue3'
 import { http, HttpResponse } from 'msw'
 import { within, userEvent, expect } from '@storybook/test'
@@ -1432,7 +1441,7 @@ package.jsonのscriptsに以下を追加します。
 
 以下は実装例になります。メールアドレスとパスワードの入力フォームを作成しています。メールアドレスとパスワードを入力すると送信ボタンが活性化します。このE2Eテストでは入力後に送信ボタンが活性化しているかどうかを検証しています。
 ```ts
-// pages/foo.vue
+// src/pages/foo.vue
 <script lang="ts" setup>
 import { Form, Field } from 'vee-validate'
 </script>
@@ -1462,7 +1471,7 @@ import { Form, Field } from 'vee-validate'
 ```
 
 ```ts
-// ./src/tests/e2eTest/foo.spec.ts
+// src/tests/e2eTest/foo.spec.ts
 import { afterAll, beforeAll, describe, expect, test } from 'vitest'
 import { launch } from 'puppeteer'
 // PuppeteerLaunchOptionsをインポートできない場合は、PuppeteerLaunchOptionsの代わりにLaunchOptionsを使用してください。
@@ -1494,7 +1503,7 @@ describe('E2E', () => {
     await browser.close()
   })
 
-   test('1-If you input a valid value, submit button should enable', async () => {
+   test('有効な値を入力すると送信ボタンが活性すること', async () => {
       try {
         // Arrange
         // ページ遷移
