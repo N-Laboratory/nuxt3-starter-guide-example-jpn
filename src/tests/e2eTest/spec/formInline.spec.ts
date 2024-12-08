@@ -143,7 +143,6 @@ describe('Index', () => {
           fullPage: true,
         })
 
-        // textContentは前後に空白を付与したテキストを返却するのでtrimで空白を除去する必要があります
         const pageTitle = await page.$eval(
           '[data-testid="page-title"]',
           element => element.textContent?.trim(),
@@ -158,7 +157,7 @@ describe('Index', () => {
         )
 
         // Assert
-        expect(isDisabled).toBeFalsy()
+        expect(isDisabled).toBe(false)
         expect(pageTitle).toBe('MyPage')
         expect(email).toBe('test@test.com')
         expect(password).toBe('test')

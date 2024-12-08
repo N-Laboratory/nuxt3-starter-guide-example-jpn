@@ -3,7 +3,6 @@ import en from '@vee-validate/i18n/dist/locale/en.json'
 import ja from '@vee-validate/i18n/dist/locale/ja.json'
 import { defineRule, configure } from 'vee-validate'
 import { vi } from 'vitest'
-import flushPromises from 'flush-promises'
 import type { RouteLocationNormalized, NavigationGuard } from 'vue-router'
 import { all } from '@vee-validate/rules'
 
@@ -12,7 +11,7 @@ interface RedirectMiddleware {
   (
     to: RouteLocationNormalized,
     from: RouteLocationNormalized
-  ): ReturnType<NavigationGuard>;
+  ): ReturnType<NavigationGuard>
 }
 const stubMiddleWare = (middleware: RedirectMiddleware) => middleware
 vi.stubGlobal('defineNuxtRouteMiddleware', stubMiddleWare)
@@ -22,8 +21,8 @@ configure({
   generateMessage: localize({
     en,
     // エラーメッセージの日本語化
-    ja
-  })
+    ja,
+  }),
 })
 
 Object.entries(all).forEach(([name, rule]) => {
@@ -33,10 +32,3 @@ Object.entries(all).forEach(([name, rule]) => {
 
 // エラーメッセージの日本語化
 setLocale('ja')
-
-// fireEvent実行後に以下の関数を呼ぶこと (fireEventでHTMLを操作した際に、操作結果をHTMLに反映させるため)
-export const waitPerfectly = async () => {
-  await flushPromises()
-  vi.runAllTimers()
-  await flushPromises()
-}
